@@ -1017,27 +1017,73 @@ async function processQrisPayment(totalAmount, customerData) {
     });
 
     const result = await response.json();
+    console.log('Full response:', result);
 
-    // Cek error dari server
     if (!response.ok || result.success === false) {
       throw new Error(result.message || result.error || 'Gagal membuat QRIS');
     }
 
+    // ============================================================
+    // AMBIL DATA DARI field "deposit" (AustinStore format)
+    // Fallback ke "data" atau root kalau tidak ada
+    // ============================================================
+    const payload = result.deposit || result.data || result;
+
+    // Cari ID transaksi di berbagai kemungkinan nama field
+    const trxId = payload.id
+      || payload.transaksi_id
+      || payload.transaction_id
+      || payload.trx_id
+      || payload.order_id
+      || payload.deposit_id
+      || payload.reference_id
+      || payload.reference;
+
+    // Cari gambar QR di berbagai kemungkinan nama field
+    const qrImage = payload.qr_image
+      || payload.qr_image_link
+      || payload.qr_url
+      || payload.qr_code
+      || payload.qris_url
+      || payload.qris_image
+      || payload.qr_string
+      || payload.payment_url;
+
+    // Cari waktu kadaluarsa
+    const expiredAt = payload.expired_at
+      || payload.expires_at
+      || payload.expired_at_iso
+      || payload.expiry_time;
+
+    // ============================================================
+    // DEBUG: Kalau ada yang tidak ketemu, tampilkan response mentah
+    // ============================================================
+    if (!trxId || !qrImage) {
+      box.innerHTML = `
+        <div class="qris-status error">
+          ⚠️ Response tidak sesuai ekspektasi<br>
+          <small style="display:block; margin-top:4px;">
+            ${!trxId ? '• ID transaksi tidak ditemukan<br>' : ''}
+            ${!qrImage ? '• Gambar QR tidak ditemukan<br>' : ''}
+          </small>
+          <details style="margin-top:12px; text-align:left;">
+            <summary style="cursor:pointer; font-size:0.85rem;">Lihat response mentah</summary>
+            <pre style="font-size:0.7rem; white-space:pre-wrap; word-break:break-all; background:#fff; padding:8px; border-radius:6px; margin-top:8px; max-height:250px; overflow:auto;">${JSON.stringify(result, null, 2)}</pre>
+          </details>
+        </div>
+        <button class="btn-checkout" onclick="closeQrisModal()">Tutup</button>
+      `;
+      return;
+    }
+
     // Simpan data
     currentQrisData = result;
-    const trxId = result.transaksiId || result.transaction_id || result.order_id || result.id;
-    const qrImage = result.qr_image || result.qr_image_link || result.qr_url || result.qr_code;
-    const expiredAt = result.expired_at || result.expires_at;
-
-    if (!trxId) {
-      throw new Error('Server tidak mengembalikan ID transaksi');
-    }
 
     // Set waktu kadaluarsa
     if (expiredAt) {
       qrisExpiredAt = new Date(expiredAt).getTime();
     } else {
-      qrisExpiredAt = Date.now() + 15 * 60 * 1000; // default 15 menit
+      qrisExpiredAt = Date.now() + 15 * 60 * 1000;
     }
 
     // Tampilkan QR
@@ -1058,7 +1104,6 @@ async function processQrisPayment(totalAmount, customerData) {
       </button>
     `;
 
-    // Mulai hitung waktu & polling otomatis
     startQrisTimer();
     startQrisPolling(trxId, customerData);
 
@@ -1066,10 +1111,9 @@ async function processQrisPayment(totalAmount, customerData) {
     console.error(err);
     box.innerHTML = `
       <div class="qris-status error">
-        ⚠️ Gagal membuat QRIS<br>
-        <small>${err.message}</small>
+        ⚠️ ${err.message}<br>
+        <button class="btn-checkout" style="margin-top:12px;" onclick="closeQrisModal()">Tutup</button>
       </div>
-      <button class="btn-checkout" onclick="closeQrisModal()">Tutup</button>
     `;
   }
 }
