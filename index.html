@@ -988,6 +988,219 @@ document.addEventListener('click', (e) => {
   }
 });
 
+  /* =========================================================
+   PEMBAYARAN QRIS OTOMATIS + AUTO POLLING STATUS
+   ========================================================= */
+let qrisPollingInterval = null;
+let qrisTimerInterval = null;
+let qrisExpiredAt = null;
+let currentQrisData = null;
+
+async function processQrisPayment(totalAmount, customerData) {
+  const box = document.getElementById('qrisBox');
+
+  // Buka modal QRIS
+  document.getElementById('qrisModal').classList.add('show');
+  box.innerHTML = `
+    <div class="qris-loading">
+      <div class="spinner"></div>
+      <p>Membuat kode QRIS...</p>
+    </div>
+  `;
+
+  try {
+    // Kirim ke serverless function Vercel
+    const response = await fetch('/api/create-payment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount: totalAmount })
+    });
+
+    const result = await response.json();
+
+    // Cek error dari server
+    if (!response.ok || result.success === false) {
+      throw new Error(result.message || result.error || 'Gagal membuat QRIS');
+    }
+
+    // Simpan data
+    currentQrisData = result;
+    const trxId = result.transaksiId || result.transaction_id || result.order_id || result.id;
+    const qrImage = result.qr_image || result.qr_image_link || result.qr_url || result.qr_code;
+    const expiredAt = result.expired_at || result.expires_at;
+
+    if (!trxId) {
+      throw new Error('Server tidak mengembalikan ID transaksi');
+    }
+
+    // Set waktu kadaluarsa
+    if (expiredAt) {
+      qrisExpiredAt = new Date(expiredAt).getTime();
+    } else {
+      qrisExpiredAt = Date.now() + 15 * 60 * 1000; // default 15 menit
+    }
+
+    // Tampilkan QR
+    box.innerHTML = `
+      <div class="qris-amount">${formatRupiah(totalAmount)}</div>
+      <img src="${qrImage}" alt="QRIS Code">
+      <div class="qris-timer">
+        Sisa waktu: <b id="qrisTimer">--:--</b>
+      </div>
+      <div class="qris-info">
+        ID Transaksi: <b>${trxId}</b>
+      </div>
+      <div class="qris-status pending" id="qrisStatus">
+        ⏳ Menunggu pembayaran...
+      </div>
+      <button class="btn-checkout" onclick="manualCheckQrisStatus('${trxId}')">
+        🔄 Cek Status Sekarang
+      </button>
+    `;
+
+    // Mulai hitung waktu & polling otomatis
+    startQrisTimer();
+    startQrisPolling(trxId, customerData);
+
+  } catch (err) {
+    console.error(err);
+    box.innerHTML = `
+      <div class="qris-status error">
+        ⚠️ Gagal membuat QRIS<br>
+        <small>${err.message}</small>
+      </div>
+      <button class="btn-checkout" onclick="closeQrisModal()">Tutup</button>
+    `;
+  }
+}
+
+/* =========================================================
+   TIMER COUNTDOWN
+   ========================================================= */
+function startQrisTimer() {
+  clearInterval(qrisTimerInterval);
+  const el = () => document.getElementById('qrisTimer');
+
+  qrisTimerInterval = setInterval(() => {
+    const remaining = qrisExpiredAt - Date.now();
+
+    if (remaining <= 0) {
+      clearInterval(qrisTimerInterval);
+      if (el()) el().textContent = '00:00';
+      const status = document.getElementById('qrisStatus');
+      if (status) {
+        status.className = 'qris-status expired';
+        status.textContent = '❌ QRIS telah kadaluarsa';
+      }
+      return;
+    }
+
+    const min = Math.floor(remaining / 60000);
+    const sec = Math.floor((remaining % 60000) / 1000);
+    if (el()) {
+      el().textContent = `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+    }
+  }, 1000);
+}
+
+/* =========================================================
+   AUTO POLLING — Cek status tiap 5 detik
+   ========================================================= */
+function startQrisPolling(trxId, customerData) {
+  clearInterval(qrisPollingInterval);
+
+  qrisPollingInterval = setInterval(async () => {
+    // Stop kalau modal sudah ditutup
+    const modal = document.getElementById('qrisModal');
+    if (!modal.classList.contains('show')) {
+      clearInterval(qrisPollingInterval);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/deposit/check/${encodeURIComponent(trxId)}`);
+      const result = await response.json();
+
+      const status = result.status;
+
+      if (status === 'paid') {
+        clearInterval(qrisPollingInterval);
+        clearInterval(qrisTimerInterval);
+        updateQrisStatusUI('paid', '✅ Pembayaran berhasil!');
+        setTimeout(() => {
+          finishQrisPayment(customerData, trxId);
+        }, 2000);
+      } else if (status === 'expired') {
+        clearInterval(qrisPollingInterval);
+        clearInterval(qrisTimerInterval);
+        updateQrisStatusUI('expired', '❌ QRIS telah kadaluarsa');
+      }
+    } catch (err) {
+      console.warn('Polling error:', err);
+    }
+  }, 5000);
+}
+
+/* =========================================================
+   UPDATE TAMPILAN STATUS DI MODAL
+   ========================================================= */
+function updateQrisStatusUI(status, text) {
+  const el = document.getElementById('qrisStatus');
+  if (!el) return;
+  el.className = `qris-status ${status}`;
+  el.textContent = text;
+}
+
+/* =========================================================
+   CEK MANUAL (tombol)
+   ========================================================= */
+async function manualCheckQrisStatus(trxId) {
+  showToast('Memeriksa status...');
+  try {
+    const response = await fetch(`/api/deposit/check/${encodeURIComponent(trxId)}`);
+    const result = await response.json();
+
+    if (result.status === 'paid') {
+      clearInterval(qrisPollingInterval);
+      clearInterval(qrisTimerInterval);
+      updateQrisStatusUI('paid', '✅ Pembayaran berhasil!');
+      setTimeout(() => finishQrisPayment(null, trxId), 1500);
+    } else if (result.status === 'expired') {
+      clearInterval(qrisPollingInterval);
+      clearInterval(qrisTimerInterval);
+      updateQrisStatusUI('expired', '❌ QRIS telah kadaluarsa');
+    } else if (result.status === 'pending') {
+      showToast('⏳ Pembayaran belum masuk');
+    } else {
+      showToast(result.message || 'Status tidak diketahui');
+    }
+  } catch (err) {
+    showToast('Gagal cek status');
+  }
+}
+
+/* =========================================================
+   FINISH — Setelah pembayaran sukses
+   ========================================================= */
+function finishQrisPayment(customerData, trxId) {
+  cart = [];
+  saveCart();
+  updateCartUI();
+  showToast('✅ Pembayaran berhasil! Terima kasih.');
+  setTimeout(() => {
+    closeQrisModal();
+  }, 2000);
+}
+
+/* =========================================================
+   TUTUP MODAL QRIS + BERSIHKAN INTERVAL
+   ========================================================= */
+function closeQrisModal() {
+  document.getElementById('qrisModal').classList.remove('show');
+  clearInterval(qrisPollingInterval);
+  clearInterval(qrisTimerInterval);
+  }
+  
 /* =========================================================
    INISIALISASI
    ========================================================= */
