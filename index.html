@@ -934,6 +934,18 @@ function submitOrder(e) {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
+  // ============================================================
+  // JIKA QRIS → proses otomatis via API
+  // ============================================================
+  if (payment === 'QRIS') {
+    closeModal('checkoutModal');
+    processQrisPayment(total, { name, phone, email });
+    return;
+  }
+
+  // ============================================================
+  // Jika Transfer Bank → kirim ke WhatsApp
+  // ============================================================
   let message = `Halo Ayven, saya ingin memesan:%0A%0A`;
   message += `*Detail Pesanan:*%0A`;
   cart.forEach((item, i) => {
@@ -948,7 +960,6 @@ function submitOrder(e) {
 
   const waNumber = '6281234567890';
   const waURL = `https://wa.me/${waNumber}?text=${message}`;
-
   window.open(waURL, '_blank');
 
   cart = [];
