@@ -626,6 +626,23 @@
   </div>
 </footer>
 
+  <!-- ============ MODAL QRIS ============ -->
+<div class="modal-overlay" id="qrisModal">
+  <div class="modal" style="max-width: 420px;">
+    <button class="modal-close" onclick="closeQrisModal()">✕</button>
+    <h2 style="margin-bottom:8px;">Pembayaran QRIS</h2>
+    <p style="color:var(--gray); font-size:0.9rem; margin-bottom:16px;">
+      Scan kode di bawah dengan aplikasi bank / e-wallet Anda.
+    </p>
+    <div class="qris-box" id="qrisBox">
+      <div class="qris-loading">
+        <div class="spinner"></div>
+        <p>Membuat kode QRIS...</p>
+      </div>
+    </div>
+  </div>
+</div>
+  
 <!-- ============ TOAST ============ -->
 <div class="toast" id="toast"></div>
 
