@@ -404,7 +404,7 @@
 <!-- ============ HEADER ============ -->
 <header>
   <div class="navbar">
-    <a href="#" class="logo">Xolô<span>fox</span>.id</a>
+    <a href="#" class="logo">Ayven<span>fox</span>.id</a>
     <div class="search-bar">
       <input type="text" id="searchInput" placeholder="Cari produk...">
     </div>
@@ -419,7 +419,7 @@
 <!-- ============ HERO / BANNER ============ -->
 <section class="hero">
   <div class="hero-text">
-    <h1>Selamat Datang di Xolôfox.id</h1>
+    <h1>Selamat Datang di Ayven.id</h1>
     <p>Temukan produk pilihan terbaik dengan harga terjangkau. Belanja mudah, kirim cepat!</p>
     <button class="btn" onclick="document.getElementById('katalog').scrollIntoView({behavior:'smooth'})">
       Lihat Katalog →
@@ -542,13 +542,13 @@
     </div>
     <div>
       <h4>Kontak</h4>
-      <a href="https://wa.me/6281234567890" target="_blank">📱 WhatsApp</a>
-      <a href="mailto:info@xolofox.id">✉️ info@xolofox.id</a>
-      <a href="#">📍 Jakarta, Indonesia</a>
+      <a href="https://wa.me/6285779126072" target="_blank">📱 WhatsApp</a>
+      <a href="mailto:info@xolofox.id">✉️ Ayveneyra@gmail.co</a>
+      <a href="#">📍 Bekasi, Indonesia</a>
     </div>
   </div>
   <div class="footer-bottom">
-    © 2024 Xolôfox.id — Semua Hak Dilindungi.
+    © 2026 Ayven.id — Semua Hak Dilindungi.
   </div>
 </footer>
 
@@ -561,20 +561,18 @@
    Ganti data di bawah ini dengan produk asli Anda.
    ========================================================= */
 const products = [
-  { id: 1, name: "Kaos Premium Cotton", price: 89000, category: "fashion", desc: "Kaos berbahan katun premium 30s, nyaman dipakai sehari-hari. Tersedia berbagai ukuran.", emoji: "👕", stock: 25 },
-  { id: 2, name: "Headphone Wireless", price: 250000, category: "elektronik", desc: "Headphone Bluetooth 5.0 dengan kualitas suara jernih dan baterai tahan 20 jam.", emoji: "🎧", stock: 12 },
-  { id: 3, name: "Jam Tangan Kulit", price: 175000, category: "aksesoris", desc: "Jam tangan dengan strap kulit asli, desain elegan cocok untuk pria & wanita.", emoji: "⌚", stock: 8 },
-  { id: 4, name: "Serum Vitamin C", price: 120000, category: "kecantikan", desc: "Serum wajah dengan vitamin C 20%, membantu mencerahkan dan menyegarkan kulit.", emoji: "🧴", stock: 30 },
-  { id: 5, name: "Sneakers Sport", price: 320000, category: "fashion", desc: "Sepatu olahraga ringan dan nyaman, cocok untuk lari maupun aktivitas harian.", emoji: "👟", stock: 15 },
-  { id: 6, name: "Powerbank 10000mAh", price: 145000, category: "elektronik", desc: "Powerbank fast charging 10000mAh dengan 2 port USB, praktis dibawa bepergian.", emoji: "🔋", stock: 20 },
-  { id: 7, name: "Tas Ransel Kanvas", price: 210000, category: "aksesoris", desc: "Tas ransel bahan kanvas tebal, muat laptop 14 inci, cocok untuk kerja & kuliah.", emoji: "🎒", stock: 10 },
-  { id: 8, name: "Lipstik Matte", price: 75000, category: "kecantikan", desc: "Lipstik matte tahan lama, tidak membuat bibir kering. Tersedia 5 varian warna.", emoji: "💄", stock: 40 }
+  { id: 1, name: "Nomer kosong", price: 5000, category: "Otp", desc: "Kaos berbahan katun premium 30s, nyaman dipakai sehari-hari. Tersedia berbagai ukuran.", url: "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183601_840_1hsqv0ry.jpg", stock: unlimited },
+  { id: 2, name: "aligh montion", price: 10000, category: "premium", desc: "Sebuah akun premium aligh motion selama 1 tahun.", url: "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183317_908_0tuedne1.jpg", stock: unlimited  },
+  { id: 3, name: "capcut", price: 25000, category: "premium", desc: "sebuah akun capcut premium selama 1bulan.", url: "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184016_499_hav9l5ke.jpg", stock: 8 },
+  { id: 4, name: "YouTube", price: 20000, category: "premium", desc: "Sebuah akun premium YouTube selama 1bulan.", url: "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184024_110_be02deab.jpg", stock: 10 },
+  { id: 5, name: "Spotify", price: 21000, category: "premium", desc: "Sebuah akun premium Spotify selama 1 bulan.", url: "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184029_966_rdupq39f.jpg", stock: 5 },
+  { id: 6, name: "Netflix", price: 40000, category: "premium", desc: "akun premium selama 1 bulan.", url: "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183001_765_r9nrssyn.jpg", stock: 7 },
 ];
 
 /* =========================================================
    STATE
    ========================================================= */
-let cart = JSON.parse(localStorage.getItem('xolofox_cart')) || [];
+let cart = JSON.parse(localStorage.getItem('Ayven_cart')) || [];
 let activeCategory = 'all';
 let searchQuery = '';
 let currentProduct = null;
@@ -593,7 +591,7 @@ function showToast(msg) {
 }
 
 function saveCart() {
-  localStorage.setItem('xolofox_cart', JSON.stringify(cart));
+  localStorage.setItem('Ayven_cart', JSON.stringify(cart));
 }
 
 /* =========================================================
@@ -618,7 +616,7 @@ function renderProducts() {
 
   grid.innerHTML = filtered.map(p => `
     <div class="product-card">
-      <div class="product-img" onclick="openDetail(${p.id})">${p.emoji}</div>
+      <div class="product-img" onclick="openDetail(${p.id})">${p.url}</div>
       <div class="product-info">
         <h3>${p.name}</h3>
         <div class="product-price">${formatRupiah(p.price)}</div>
@@ -653,7 +651,7 @@ function openDetail(id) {
   currentQty = 1;
   const modal = document.getElementById('detailModal');
   document.getElementById('modalContent').innerHTML = `
-    <div class="product-img" style="font-size:5rem; border-radius:12px;">${currentProduct.emoji}</div>
+    <div class="product-img" style="font-size:5rem; border-radius:12px;">${currentProduct.url}</div>
     <div class="modal-detail">
       <h2>${currentProduct.name}</h2>
       <div class="price">${formatRupiah(currentProduct.price)}</div>
@@ -704,7 +702,7 @@ function addToCart(id, qty) {
       id: product.id,
       name: product.name,
       price: product.price,
-      emoji: product.emoji,
+      url: product.url,
       qty: qty
     });
   }
@@ -729,7 +727,7 @@ function updateCartUI() {
   } else {
     itemsEl.innerHTML = cart.map(item => `
       <div class="cart-item">
-        <div class="cart-item-img">${item.emoji}</div>
+        <div class="cart-item-img">${item.url}</div>
         <div class="cart-item-info">
           <h4>${item.name}</h4>
           <div class="price">${formatRupiah(item.price)} × ${item.qty}</div>
@@ -776,7 +774,7 @@ function submitOrder(e) {
 
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
 
-  let message = `Halo Xolôfox.id, saya ingin memesan:%0A%0A`;
+  let message = `Halo Ayven.id, saya ingin memesan:%0A%0A`;
   message += `*Detail Pesanan:*%0A`;
   cart.forEach((item, i) => {
     message += `${i + 1}. ${item.name} × ${item.qty} = ${formatRupiah(item.price * item.qty)}%0A`;
@@ -784,11 +782,7 @@ function submitOrder(e) {
   message += `%0A*Total: ${formatRupiah(total)}*%0A%0A`;
   message += `*Data Pembeli:*%0A`;
   message += `Nama: ${name}%0A`;
-  message += `WhatsApp: ${phone}%0A`;
   if (email) message += `Email: ${email}%0A`;
-  message += `Alamat: ${address}%0A`;
-  message += `Pengiriman: ${shipping}%0A`;
-  message += `Pembayaran: ${payment}%0A`;
 
   const waNumber = '6281234567890';
   const waURL = `https://wa.me/${waNumber}?text=${message}`;
