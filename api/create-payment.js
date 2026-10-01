@@ -1,6 +1,6 @@
 // api/create-payment.js
 // Vercel Serverless Function — POST /api/create-payment
-// Membuat QRIS otomatis via AustinStore
+// Versi: API Key di QUERY STRING + Signature HMAC di header
 
 import crypto from "node:crypto";
 
@@ -51,19 +51,29 @@ export default async function handler(req, res) {
       });
     }
 
+    // ============================================
+    // SIAPKAN PAYLOAD
+    // ============================================
     const path = "/api/deposit/create";
     const body = JSON.stringify({
       amount: Number(amount),
       method: "qris"
     });
 
+    // Buat signature HMAC
     const { timestamp, signature } = signRequest("POST", path, body, API_SECRET);
 
-    const response = await fetch(`https://austinstore.id${path}`, {
+    // ============================================
+    // KIRIM KE AUSTINSTORE
+    // API Key di QUERY STRING (seperti endpoint check)
+    // Signature di HEADER
+    // ============================================
+    const url = `https://austinstore.id${path}?apikey=${API_KEY}`;
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "X-API-Key": API_KEY,
         "X-Timestamp": timestamp,
         "X-Signature": signature
       },
@@ -71,8 +81,10 @@ export default async function handler(req, res) {
     });
 
     const responseText = await response.text();
-    let data;
+    console.log("AustinStore response:", responseText);
+    console.log("Status code:", response.status);
 
+    let data;
     try {
       data = JSON.parse(responseText);
     } catch {
@@ -84,7 +96,17 @@ export default async function handler(req, res) {
       });
     }
 
-    return res.status(response.status).json(data);
+    // Kalau gagal, kirim pesan ASLI dari AustinStore
+    if (!response.ok || data.success === false) {
+      return res.status(response.status).json({
+        success: false,
+        status: "error",
+        message: data.message || data.error || "Gagal membuat QRIS",
+        detail: data
+      });
+    }
+
+    return res.status(200).json(data);
 
   } catch (err) {
     console.error("Error create-payment:", err);
