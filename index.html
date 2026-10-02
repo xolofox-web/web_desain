@@ -1098,10 +1098,12 @@ function submitOrder(e) {
     message += `${i + 1}. ${item.name} × ${item.qty} = ${formatRupiah(item.price * item.qty)}%0A`;
   });
   message += `%0A*Total: ${formatRupiah(total)}*%0A%0A`;
-  message += `*Data Pembeli:*%0A`;
+    message += `*Data Pembeli:*%0A`;
+  const session = getSession();
   message += `Nama: ${name}%0A`;
   message += `WhatsApp: ${phone}%0A`;
   if (email) message += `Email: ${email}%0A`;
+  if (session) message += `Akun: ${session.email}%0A`;
   message += `Pembayaran: ${payment}%0A`;
 
   const waNumber = '6285779126072';
