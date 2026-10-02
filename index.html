@@ -1052,6 +1052,18 @@ function openCheckout() {
     showToast('Keranjang masih kosong');
     return;
   }
+
+  // WAJIB LOGIN dulu
+  if (!isLoggedIn()) {
+    showToast('Silakan login atau daftar dulu');
+    window.pendingCheckout = true;   // flag: setelah login, langsung buka checkout
+    openAuthModal('login');
+    return;
+  }
+
+  // Isi otomatis dengan data user
+  fillCheckoutWithUser();
+
   const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
   document.getElementById('checkoutTotal').textContent = formatRupiah(total);
   document.getElementById('checkoutModal').classList.add('show');
