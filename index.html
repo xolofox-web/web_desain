@@ -877,6 +877,56 @@ function submitOrder(e) {
   showToast('Pesanan dikirim ke WhatsApp ✅');
 }
 
+  function refundTransaction(trxId) {
+  const all = getAllTransactions();
+  const trx = all.find(t => t.id === trxId);
+  if (!trx) return;
+
+  // Konfirmasi ganda — karena ini melibatkan uang
+  const konfirmasi = confirm(
+    `KONFIRMASI REFUND\n\n` +
+    `ID Pesanan: ${trxId}\n` +
+    `Total: ${formatRupiah(trx.total)}\n\n` +
+    `Dana sebesar ${formatRupiah(trx.total)} akan dikembalikan UTUH ke rekening / e-wallet Anda.\n\n` +
+    `Proses: 1×24 jam setelah pengajuan.\n\n` +
+    `Lanjutkan refund?`
+  );
+  if (!konfirmasi) return;
+
+  // Update status jadi refunded
+  updateTransactionStatus(trxId, 'refunded', {
+    refundedAt: Date.now(),
+    refundAmount: trx.total
+  });
+
+  showToast(`💸 Refund ${formatRupiah(trx.total)} diajukan!`);
+  renderTransactions();
+
+  // Optional: kirim notifikasi ke admin via WhatsApp
+  // Buka WhatsApp admin dengan pesan refund
+  setTimeout(() => {
+    const pesan = 
+      `*PENGAJUAN REFUND*\n\n` +
+      `ID Pesanan: ${trxId}\n` +
+      `Nama: ${trx.userName}\n` +
+      `Email: ${trx.userEmail}\n` +
+      `WhatsApp: ${trx.userPhone}\n` +
+      `Total Refund: ${formatRupiah(trx.total)}\n` +
+      `Metode: ${trx.payment}\n` +
+      (trx.qrisTrxId ? `ID QRIS: ${trx.qrisTrxId}\n` : '') +
+      `\nMohon proses pengembalian dana ke rekening / e-wallet pembeli.`;
+    
+    const adminWA = '6285779126072';
+    const lanjut = confirm(
+      'Refund diajukan!\n\n' +
+      'Kirim notifikasi ke admin via WhatsApp untuk mempercepat proses?'
+    );
+    if (lanjut) {
+      window.open(`https://wa.me/${adminWA}?text=${encodeURIComponent(pesan)}`, '_blank');
+    }
+  }, 500);
+  }
+
 /* =========================================================
    EVENT GLOBAL
    ========================================================= */
