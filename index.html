@@ -1315,7 +1315,81 @@ function updateCartUI() {
     </div>
   `;
   
-  document.getElementById('cartTotal').textContent = formatRupiah(subtotal);
+function updateCartUI() {
+  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  document.getElementById('cartCount').textContent = count;
+  document.getElementById('cartHeaderBadge').textContent = count;
+
+  const itemsEl = document.getElementById('cartItems');
+  const summaryEl = document.getElementById('cartSummary');
+  const checkoutBtn = document.getElementById('btnCheckout');
+
+  // KOSONG
+  if (cart.length === 0) {
+    itemsEl.innerHTML = `
+      <div class="cart-empty">
+        <div class="empty-icon">🛒</div>
+        <h4>Keranjang masih kosong</h4>
+        <p>Yuk, tambahkan produk dulu!</p>
+        <button onclick="closeCart()">Mulai Belanja</button>
+      </div>
+    `;
+    summaryEl.innerHTML = '';
+    checkoutBtn.disabled = true;
+    checkoutBtn.textContent = 'Keranjang Kosong';
+    return;
+  }
+
+  // ADA ITEM
+  checkoutBtn.disabled = false;
+  checkoutBtn.textContent = 'Checkout →';
+
+  itemsEl.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-img">
+        <img src="${item.image}" alt="${item.name}">
+      </div>
+      <div class="cart-item-info">
+        <div>
+          <h4>${item.name}</h4>
+          <div class="cart-item-price">${formatRupiah(item.price)}</div>
+          <div class="cart-item-subtotal">
+            Subtotal: ${formatRupiah(item.price * item.qty)}
+          </div>
+        </div>
+        <div class="cart-item-bottom">
+          <div class="qty-controls">
+            <button onclick="changeCartQty(${item.id}, -1)" ${item.qty <= 1 ? 'disabled' : ''}>−</button>
+            <span class="qty-value">${item.qty}</span>
+            <button onclick="changeCartQty(${item.id}, 1)">+</button>
+          </div>
+          <button class="cart-item-remove" onclick="removeFromCart(${item.id})">
+            Hapus
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  // SUMMARY
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+
+  summaryEl.innerHTML = `
+    <div class="cart-summary-row">
+      <span>Total Item</span>
+      <span>${totalQty} produk</span>
+    </div>
+    <div class="cart-summary-row">
+      <span>Subtotal</span>
+      <span>${formatRupiah(subtotal)}</span>
+    </div>
+    <div class="cart-summary-row total">
+      <span>Total</span>
+      <span>${formatRupiah(subtotal)}</span>
+    </div>
+  `;
+}
   
 }
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
