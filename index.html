@@ -1122,6 +1122,180 @@ document.addEventListener('click', (e) => {
   }
 });
 
+/* =========================================================
+   AUTENTIKASI (LOGIN / REGISTER)
+   ========================================================= */
+// Data user disimpan di localStorage (untuk demo).
+// Nanti bisa di-upgrade ke Supabase / database online.
+
+const AUTH_USERS_KEY = 'ayven_users';
+const AUTH_SESSION_KEY = 'ayven_session';
+
+function getUsers() {
+  return JSON.parse(localStorage.getItem(AUTH_USERS_KEY)) || [];
+}
+
+function saveUsers(users) {
+  localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(users));
+}
+
+function getSession() {
+  return JSON.parse(localStorage.getItem(AUTH_SESSION_KEY)) || null;
+}
+
+function setSession(user) {
+  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(user));
+}
+
+function clearSession() {
+  localStorage.removeItem(AUTH_SESSION_KEY);
+}
+
+function isLoggedIn() {
+  return getSession() !== null;
+}
+
+/* ---------- Buka Modal Auth ---------- */
+function openAuthModal(tab = 'login') {
+  switchAuthTab(tab);
+  document.getElementById('authModal').classList.add('show');
+}
+
+function switchAuthTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach((t, i) => {
+    t.classList.toggle('active', (tab === 'login' && i === 0) || (tab === 'register' && i === 1));
+  });
+  document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+  document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+}
+
+/* ---------- REGISTER ---------- */
+function handleRegister(e) {
+  e.preventDefault();
+
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const phone = document.getElementById('regPhone').value.trim();
+  const password = document.getElementById('regPassword').value;
+
+  if (password.length < 6) {
+    showToast('Password minimal 6 karakter');
+    return;
+  }
+
+  const users = getUsers();
+
+  // Cek email sudah terdaftar?
+  if (users.find(u => u.email === email)) {
+    showToast('Email sudah terdaftar, silakan login');
+    switchAuthTab('login');
+    return;
+  }
+
+  // Simpan user baru
+  const newUser = { name, email, phone, password, createdAt: Date.now() };
+  users.push(newUser);
+  saveUsers(users);
+
+  // Auto login
+  setSession({ name, email, phone });
+  updateUserUI();
+
+  closeModal('authModal');
+  showToast('Pendaftaran berhasil! Selamat datang, ' + name);
+
+  // Kalau ada pending checkout, langsung buka
+  if (window.pendingCheckout) {
+    window.pendingCheckout = false;
+    setTimeout(() => openCheckout(), 400);
+  }
+}
+
+/* ---------- LOGIN ---------- */
+function handleLogin(e) {
+  e.preventDefault();
+
+  const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+  const password = document.getElementById('loginPassword').value;
+
+  const users = getUsers();
+  const user = users.find(u => u.email === email && u.password === password);
+
+  if (!user) {
+    showToast('Email atau password salah');
+    return;
+  }
+
+  setSession({ name: user.name, email: user.email, phone: user.phone });
+  updateUserUI();
+
+  closeModal('authModal');
+  showToast('Selamat datang kembali, ' + user.name);
+
+  // Reset form
+  document.getElementById('loginForm').reset();
+
+  // Kalau ada pending checkout, langsung buka
+  if (window.pendingCheckout) {
+    window.pendingCheckout = false;
+    setTimeout(() => openCheckout(), 400);
+  }
+}
+
+/* ---------- LOGOUT ---------- */
+function handleLogout() {
+  if (!confirm('Yakin ingin keluar?')) return;
+  clearSession();
+  updateUserUI();
+  showToast('Anda telah keluar');
+}
+
+/* ---------- UPDATE TAMPILAN NAVBAR ---------- */
+function updateUserUI() {
+  const userArea = document.getElementById('userArea');
+  const session = getSession();
+
+  if (session) {
+    const initial = session.name.charAt(0).toUpperCase();
+    userArea.innerHTML = `
+      <div class="user-info">
+        <div class="user-avatar">${initial}</div>
+        <span>${session.name.split(' ')[0]}</span>
+        <button class="btn-logout" onclick="handleLogout()" title="Keluar">Keluar</button>
+      </div>
+    `;
+  } else {
+    userArea.innerHTML = `
+      <button class="btn-login-nav" onclick="openAuthModal('login')">Masuk</button>
+    `;
+  }
+}
+
+/* ---------- AUTO-FILL DI FORM CHECKOUT ---------- */
+function fillCheckoutWithUser() {
+  const session = getSession();
+  const infoBox = document.getElementById('checkoutUserInfo');
+  const nameField = document.getElementById('custName');
+  const phoneField = document.getElementById('custPhone');
+  const emailField = document.getElementById('custEmail');
+
+  if (session) {
+    infoBox.style.display = 'block';
+    document.getElementById('checkoutUserName').textContent = session.name;
+    document.getElementById('checkoutUserContact').textContent =
+      `${session.email} · ${session.phone}`;
+
+    // Auto-fill
+    if (nameField && !nameField.value) nameField.value = session.name;
+    if (phoneField && !phoneField.value) phoneField.value = session.phone;
+    if (emailField && !emailField.value) emailField.value = session.email;
+  } else {
+    infoBox.style.display = 'none';
+  }
+}
+
+/* ---------- INIT AUTH ---------- */
+updateUserUI();
   /* =========================================================
    PEMBAYARAN QRIS OTOMATIS + AUTO POLLING STATUS
    ========================================================= */
