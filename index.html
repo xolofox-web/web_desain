@@ -926,7 +926,7 @@ function renderTransactions() {
 
     var qrisInfo = t.qrisTrxId ? ' · ID QRIS: <span style="font-family:monospace;">' + t.qrisTrxId + '</span>' : '';
 
-    html += '<div class="trx-item status-' + t.status + '">' +
+    html += '<div class="trx-item status-' + t.status + '" onclick="openTrxDetail(\'' + t.id + '\')">' +
       '<div class="trx-header">' +
         '<div>' +
           '<div class="trx-id">' + t.id + '</div>' +
