@@ -384,6 +384,105 @@
     color: #64748b;
   }
 
+    /* ============ AUTH (LOGIN/REGISTER) ============ */
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark);
+  }
+  .user-info .user-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+  .user-info .btn-logout {
+    background: none;
+    border: none;
+    font-size: 0.75rem;
+    color: var(--gray);
+    cursor: pointer;
+    margin-left: 4px;
+  }
+  .user-info .btn-logout:hover { color: #ef4444; }
+
+  .btn-login-nav {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn-login-nav:hover { background: var(--primary-dark); }
+
+  .auth-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .auth-tab {
+    flex: 1;
+    padding: 12px;
+    background: none;
+    border: none;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--gray);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+  }
+  .auth-tab.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+  }
+  .auth-form { display: none; }
+  .auth-form.active { display: block; }
+  .auth-form .btn-checkout { margin-top: 8px; }
+  .auth-info {
+    font-size: 0.85rem;
+    color: var(--gray);
+    text-align: center;
+    margin-top: 16px;
+  }
+  .auth-info a {
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .auth-info a:hover { text-decoration: underline; }
+
+  /* User info di checkout (readonly) */
+  .checkout-user-info {
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+  .checkout-user-info strong { color: var(--primary); }
+  .checkout-user-info small {
+    display: block;
+    color: var(--gray);
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+  
     /* ============ MODAL QRIS ============ */
   .qris-box {
     text-align: center;
