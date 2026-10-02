@@ -1313,10 +1313,10 @@ updateUserUI();
   /* =========================================================
    PEMBAYARAN QRIS OTOMATIS + AUTO POLLING STATUS
    ========================================================= */
-let qrisPollingInterval = null;
-let qrisTimerInterval = null;
-let qrisExpiredAt = null;
-let currentQrisData = null;
+var qrisPollingInterval = null;
+var qrisTimerInterval = null;
+var qrisExpiredAt = null;
+var currentQrisData = null;
 
 async function processQrisPayment(totalAmount, customerData) {
   const box = document.getElementById('qrisBox');
