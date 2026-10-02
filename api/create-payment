@@ -1,0 +1,2 @@
+payload = METHOD + "\n" + PATH + "\n" + BODY + "\n" + TIMESTAMP
+signature = HMAC-SHA256(payload, API_SECRET).hex()
