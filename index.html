@@ -1056,7 +1056,9 @@ function startQrisPolling(qrisId, customerData, trxId) {
     var modal = document.getElementById('qrisModal');
     if (!modal.classList.contains('show')) { clearInterval(qrisPollingInterval); return; }
     try {
-      var response = await fetch('/api/deposit/check/' + encodeURIComponent(qrisId));
+      var response = await fetch('/api/deposit/check/' + encodeURIComponent(qrisId) + '?_=' + Date.now(), {
+        cache: 'no-store'
+      });
       var result = await response.json();
       var status = result.status;
       if (status === 'paid') {
