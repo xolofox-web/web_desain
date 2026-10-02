@@ -1216,6 +1216,24 @@ function addToCart(id, qty) {
   showToast(`${product.name} ditambahkan ke keranjang`);
 }
 
+/* ---------- Ubah qty di keranjang (+/-) ---------- */
+function changeCartQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+
+  const newQty = item.qty + delta;
+
+  if (newQty <= 0) {
+    // Kalau turun ke 0, hapus item
+    removeFromCart(id);
+    return;
+  }
+
+  item.qty = newQty;
+  saveCart();
+  updateCartUI();
+}
+  
 function removeFromCart(id) {
   cart = cart.filter(item => item.id !== id);
   saveCart();
