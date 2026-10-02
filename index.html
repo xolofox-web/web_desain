@@ -647,7 +647,11 @@
   <div class="modal">
     <button class="modal-close" onclick="closeModal('checkoutModal')">✕</button>
     <h2 style="margin-bottom:20px;">Formulir Pemesanan</h2>
-    <form id="checkoutForm" onsubmit="submitOrder(event)">
+        <form id="checkoutForm" onsubmit="submitOrder(event)">
+      <div class="checkout-user-info" id="checkoutUserInfo" style="display:none;">
+        Pesanan atas nama: <strong id="checkoutUserName">-</strong>
+        <small id="checkoutUserContact">-</small>
+      </div>
       <div class="form-group">
         <label>Nama Lengkap *</label>
         <input type="text" id="custName" required>
