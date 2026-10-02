@@ -897,16 +897,15 @@
 <!-- ============ KERANJANG ============ -->
 <aside class="cart-panel" id="cartPanel">
   <div class="cart-header">
-    <h3>Keranjang Belanja</h3>
-    <button onclick="closeCart()">✕</button>
+    <h3>🛒 Keranjang <span class="cart-badge" id="cartHeaderBadge">0</span></h3>
+    <button class="btn-close-cart" onclick="closeCart()">✕</button>
   </div>
   <div class="cart-items" id="cartItems"></div>
   <div class="cart-footer">
-    <div class="cart-total">
-      <span>Total</span>
-      <span id="cartTotal">Rp0</span>
-    </div>
-    <button class="btn-checkout" onclick="openCheckout()">Checkout</button>
+    <div class="cart-summary" id="cartSummary"></div>
+    <button class="btn-checkout" onclick="openCheckout()" id="btnCheckout">
+      Checkout →
+    </button>
   </div>
 </aside>
 
