@@ -1119,7 +1119,7 @@ async function processQrisPayment(totalAmount, customerData, trxId) {
       return;
     }
 
-    updateTransactionStatus(trxId, 'pending', { qrisTrxId: qrisId });
+    updateTransactionStatus(trxId, 'pending', { qrisTrxId: qrisId, qrImage: qrImage, qrString: payload.qr_string || null });
 
     qrisExpiredAt = expiredAt ? new Date(expiredAt).getTime() : Date.now() + 15 * 60 * 1000;
 
