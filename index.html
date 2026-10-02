@@ -1314,8 +1314,9 @@ function updateCartUI() {
       <span>${formatRupiah(subtotal)}</span>
     </div>
   `;
-
+  
   document.getElementById('cartTotal').textContent = formatRupiah(subtotal);
+  
 }
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
   document.getElementById('cartCount').textContent = count;
