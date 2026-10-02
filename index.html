@@ -686,6 +686,80 @@ function renderTransactions() {
       day: '2-digit', month: 'short', year: 'numeric',
       hour: '2-digit', minute: '2-digit'
     });
+
+    const statusLabel = {
+      pending: '⏳ Menunggu',
+      paid: '✅ Berhasil',
+      cancelled: '❌ Dibatalkan',
+      expired: '⏰ Kadaluarsa',
+      waiting: '⏳ Menunggu Konfirmasi',
+      refunded: '💸 Di-refund'
+    }[t.status] || t.status;
+
+    // Tombol aksi berdasarkan status
+    const canCancel = t.status === 'pending' || t.status === 'waiting';
+    const canRefund = t.status === 'paid'; // Sudah bayar → refund
+
+    let actionsHTML = '';
+    if (canCancel) {
+      actionsHTML = `
+        <div class="trx-actions">
+          <button class="btn-cancel" onclick="cancelTransaction('${t.id}')">
+            ❌ Batalkan Pesanan
+          </button>
+        </div>`;
+    } else if (canRefund) {
+      actionsHTML = `
+        <div class="trx-actions">
+          <button class="btn-refund" onclick="refundTransaction('${t.id}')">
+            💸 Ajukan Refund (Dana Kembali 100%)
+          </button>
+        </div>
+        <div class="refund-note">
+          ℹ️ Pesanan sudah dibayar. Ajukan refund untuk mengembalikan dana Anda secara utuh.
+        </div>`;
+    }
+
+    // Info refund (kalau sudah di-refund)
+    let refundInfoHTML = '';
+    if (t.status === 'refunded') {
+      const refundDate = t.refundedAt
+        ? new Date(t.refundedAt).toLocaleString('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+        : '-';
+      refundInfoHTML = `
+        <div class="refund-note">
+          ✅ Dana <b>${formatRupiah(t.total)}</b> telah dikembalikan pada <b>${refundDate}</b>.<br>
+          Silakan cek saldo rekening / e-wallet Anda dalam 1×24 jam.
+        </div>`;
+    }
+
+    return `
+      <div class="trx-item status-${t.status}">
+        <div class="trx-header">
+          <div>
+            <div class="trx-id">${t.id}</div>
+            <div class="trx-date">${dateStr}</div>
+          </div>
+          <span class="trx-status ${t.status}">${statusLabel}</span>
+        </div>
+        <ul class="trx-items">
+          ${t.items.map(it => `<li>${it.name} × ${it.qty} — ${formatRupiah(it.price * it.qty)}</li>`).join('')}
+        </ul>
+        <div class="trx-total">Total: ${formatRupiah(t.total)}</div>
+        <div class="trx-payment">Pembayaran: <b>${t.payment}</b>${t.qrisTrxId ? ` · ID QRIS: <span style="font-family:monospace;">${t.qrisTrxId}</span>` : ''}</div>
+        ${actionsHTML}
+        ${refundInfoHTML}
+      </div>
+    `;
+  }).join('');
+}
+  }
+
+  list.innerHTML = myTrx.map(t => {
+    const dateStr = new Date(t.date).toLocaleString('id-ID', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
     const statusLabel = {
       pending: '⏳ Menunggu',
       paid: '✅ Berhasil',
