@@ -402,6 +402,37 @@ function renderProducts() {
   var html = '';
   for (var i = 0; i < filtered.length; i++) {
     var p = filtered[i];
+    var isOutOfStock = !p.stock || p.stock <= 0;
+    var addButton = isOutOfStock
+      ? '<button class="btn-add btn-add-disabled" disabled>Stok Habis</button>'
+      : '<button class="btn-add" onclick="quickAdd(' + p.id + ')">+ Keranjang</button>';
+    var stockBadge = isOutOfStock
+      ? '<span class="stock-badge out">HABIS</span>'
+      : (p.stock <= 5 ? '<span class="stock-badge low">Sisa ' + p.stock + '</span>' : '');
+    html += '<div class="product-card">' +
+      '<div class="product-img" onclick="openDetail(' + p.id + ')">' +
+        '<img src="' + p.image + '" alt="' + p.name + '" loading="lazy">' +
+        stockBadge +
+      '</div>' +
+      '<div class="product-info"><h3>' + p.name + '</h3>' +
+      '<div class="product-price">' + formatRupiah(p.price) + '</div>' +
+      addButton + '</div></div>';
+  }
+  grid.innerHTML = html;
+}
+  var grid = document.getElementById('productGrid');
+  var noResult = document.getElementById('noResult');
+  if (!grid) return;
+  var filtered = products.filter(function(p) {
+    var matchCat = activeCategory === 'all' || p.category === activeCategory;
+    var matchSearch = p.name.toLowerCase().indexOf(searchQuery.toLowerCase()) !== -1;
+    return matchCat && matchSearch;
+  });
+  if (filtered.length === 0) { grid.innerHTML = ''; noResult.style.display = 'block'; return; }
+  noResult.style.display = 'none';
+  var html = '';
+  for (var i = 0; i < filtered.length; i++) {
+    var p = filtered[i];
     html += '<div class="product-card">' +
       '<div class="product-img" onclick="openDetail(' + p.id + ')"><img src="' + p.image + '" alt="' + p.name + '" loading="lazy"></div>' +
       '<div class="product-info"><h3>' + p.name + '</h3>' +
