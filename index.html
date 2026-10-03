@@ -1204,7 +1204,29 @@ function updateQrisStatusUI(status, text) {
   el.textContent = text;
 }
 
-async function manualCheckQrisStatus(qrisId) {
+async function manualCheckQrisStatus(qrisTrxId) {
+  showToast('Memeriksa status...');
+  try {
+    var response = await fetch('/api/deposit/check/' + encodeURIComponent(qrisTrxId) + '?_=' + Date.now(), { cache: 'no-store' });
+    var result = await response.json();
+    if (result.status === 'paid') {
+      clearInterval(qrisPollingInterval);
+      clearInterval(qrisTimerInterval);
+      updateQrisStatusUI('paid', '✅ Pembayaran berhasil!');
+      if (currentTrxId) updateTransactionStatus(currentTrxId, 'paid', { paidAt: Date.now() });
+      setTimeout(function() { finishQrisPayment(null, currentTrxId); }, 1500);
+    } else if (result.status === 'expired') {
+      clearInterval(qrisPollingInterval);
+      clearInterval(qrisTimerInterval);
+      updateQrisStatusUI('expired', '❌ QRIS kadaluarsa');
+      if (currentTrxId) updateTransactionStatus(currentTrxId, 'expired');
+    } else if (result.status === 'pending') {
+      showToast('⏳ Pembayaran belum masuk');
+    } else {
+      showToast(result.message || 'Status tidak diketahui');
+    }
+  } catch (err) { showToast('Gagal cek status'); }
+}
   showToast('Memeriksa status...');
   try {
     var response = await fetch('/api/deposit/check/' + encodeURIComponent(qrisId) + '?_=' + Date.now(), { cache: 'no-store' });
