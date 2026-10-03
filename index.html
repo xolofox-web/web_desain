@@ -824,26 +824,44 @@ async function handleRegister(e) {
   }
 }
 
-function handleLogin(e) {
+async function handleLogin(e) {
   e.preventDefault();
   var email = document.getElementById('loginEmail').value.trim().toLowerCase();
   var password = document.getElementById('loginPassword').value;
-  var user = getUsers().find(function(u) { return u.email === email && u.password === password; });
 
-  if (!user) { showToast('Email atau password salah'); return; }
+  try {
+    var result = await supabase.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
 
-  setSession({ name: user.name, email: user.email, phone: user.phone });
-  updateUserUI();
-  closeModal('authModal');
-  showToast('Selamat datang kembali, ' + user.name);
-  document.getElementById('loginForm').reset();
+    if (result.error) {
+      showToast('Login gagal: ' + result.error.message);
+      return;
+    }
 
-  if (window.pendingCheckout) {
-    window.pendingCheckout = false;
-    setTimeout(openCheckout, 400);
-  } else if (window.pendingTransactions) {
-    window.pendingTransactions = false;
-    setTimeout(openTransactions, 400);
+    var user = result.data.user;
+    var meta = user.user_metadata || {};
+    setSession({
+      name: meta.name || user.email.split('@')[0],
+      email: user.email,
+      phone: meta.phone || '',
+      userId: user.id
+    });
+    updateUserUI();
+    closeModal('authModal');
+    showToast('Selamat datang, ' + (meta.name || user.email));
+    document.getElementById('loginForm').reset();
+
+    if (window.pendingCheckout) {
+      window.pendingCheckout = false;
+      setTimeout(openCheckout, 400);
+    } else if (window.pendingTransactions) {
+      window.pendingTransactions = false;
+      setTimeout(openTransactions, 400);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message);
   }
 }
 
