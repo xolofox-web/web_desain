@@ -448,6 +448,29 @@ function renderProducts() {
 function openDetail(id) {
   currentProduct = products.find(function(p) { return p.id === id; });
   currentQty = 1;
+  var isOutOfStock = !currentProduct.stock || currentProduct.stock <= 0;
+
+  var qtyControlHTML = isOutOfStock
+    ? '<div class="qris-status expired" style="margin-bottom:16px;">⚠️ Stok habis — produk tidak dapat dibeli saat ini</div>'
+    : '<div class="qty-control"><button onclick="changeQty(-1)">−</button><span id="detailQty">1</span><button onclick="changeQty(1)">+</button></div>';
+
+  var addBtnHTML = isOutOfStock
+    ? '<button class="btn-checkout" disabled style="background:#9ca3af; cursor:not-allowed;">Stok Habis</button>'
+    : '<button class="btn-checkout" onclick="addFromDetail()">Tambah ke Keranjang</button>';
+
+  document.getElementById('modalContent').innerHTML =
+    '<div class="product-img"><img src="' + currentProduct.image + '" alt="' + currentProduct.name + '"></div>' +
+    '<div class="modal-detail"><h2>' + currentProduct.name + '</h2>' +
+    '<div class="price">' + formatRupiah(currentProduct.price) + '</div>' +
+    '<p class="desc">' + currentProduct.desc + '</p>' +
+    '<p style="font-size:0.9rem; color:var(--gray); margin-bottom:16px;">Stok tersedia: <b>' + (currentProduct.stock || 0) + '</b></p>' +
+    qtyControlHTML +
+    addBtnHTML + '</div>';
+
+  document.getElementById('detailModal').classList.add('show');
+}
+  currentProduct = products.find(function(p) { return p.id === id; });
+  currentQty = 1;
   document.getElementById('modalContent').innerHTML =
     '<div class="product-img"><img src="' + currentProduct.image + '" alt="' + currentProduct.name + '"></div>' +
     '<div class="modal-detail"><h2>' + currentProduct.name + '</h2>' +
