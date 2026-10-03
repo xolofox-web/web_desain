@@ -1388,6 +1388,15 @@ function startQrisPolling(qrisId, customerData, trxId) {
         clearInterval(qrisTimerInterval);
         updateQrisStatusUI('paid', '✅ Pembayaran berhasil!');
         if (trxId) updateTransactionStatus(trxId, 'paid', { paidAt: Date.now() });
+        // Update status di Supabase juga
+if (qrisId) {
+  supabase.from('orders')
+    .update({ status: 'paid' })
+    .eq('qris_transaction_id', qrisId)
+    .then(function(res) {
+      if (res.error) console.error('Error update status:', res.error);
+    });
+}
         setTimeout(function() { finishQrisPayment(customerData, trxId); }, 2000);
       } else if (status === 'expired') {
         clearInterval(qrisPollingInterval);
