@@ -953,6 +953,107 @@ function renderTransactions() {
   list.innerHTML = html;
 }
 
+function openTrxDetail(trxId) {
+  var all = getAllTransactions();
+  var trx = null;
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].id === trxId) { trx = all[i]; break; }
+  }
+  if (!trx) return;
+
+  var container = document.getElementById('trxDetailContent');
+
+  var statusLabel = {
+    pending: '⏳ Menunggu Pembayaran',
+    paid: '✅ Pembayaran Berhasil',
+    cancelled: '❌ Dibatalkan',
+    expired: '⏰ Kadaluarsa',
+    waiting: '⏳ Menunggu Konfirmasi',
+    refunded: '💸 Di-refund'
+  }[trx.status] || trx.status;
+
+  var statusCls = trx.status === 'paid' ? 'paid' : (trx.status === 'pending' || trx.status === 'waiting') ? 'pending' : 'expired';
+  var dateStr = new Date(trx.date).toLocaleString('id-ID', {
+    day: '2-digit', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  // ==================================================
+  // Bagian 1: Status header
+  // ==================================================
+  var html = '<div class="trx-detail-section">' +
+    '<div class="trx-detail-label">Status</div>' +
+    '<div class="trx-detail-value"><span class="trx-status ' + statusCls + '">' + statusLabel + '</span></div>' +
+    '</div>';
+
+  // ==================================================
+  // Bagian 2: Info Transaksi
+  // ==================================================
+  html += '<div class="trx-detail-section">' +
+    '<div class="trx-detail-label">ID Transaksi</div>' +
+    '<div class="trx-detail-value mono">' + trx.id + '</div>' +
+    '<div style="height:10px;"></div>' +
+    '<div class="trx-detail-label">Tanggal</div>' +
+    '<div class="trx-detail-value">' + dateStr + '</div>' +
+    '<div style="height:10px;"></div>' +
+    '<div class="trx-detail-label">Metode Pembayaran</div>' +
+    '<div class="trx-detail-value">' + trx.payment + '</div>' +
+    '</div>';
+
+  // ==================================================
+  // Bagian 3: QRIS Image (kalau ada)
+  // ==================================================
+  if (trx.payment === 'QRIS') {
+    html += '<div class="trx-detail-section">' +
+      '<div class="trx-detail-label" style="text-align:center;">QRIS Code</div>' +
+      '</div>' +
+      '<div class="trx-detail-qris">';
+
+    if (trx.qrImage) {
+      html += '<img src="' + trx.qrImage + '" alt="QRIS Code">';
+    } else {
+      html += '<div class="no-qr">📷<br><br>Gambar QRIS tidak tersedia</div>';
+    }
+
+    html += '<div class="trx-detail-label" style="margin-top:10px;">ID QRIS</div>' +
+      '<div class="trx-detail-value mono">' + (trx.qrisTrxId || '-') + '</div>' +
+      '</div>';
+  }
+
+  // ==================================================
+  // Bagian 4: Daftar Produk
+  // ==================================================
+  html += '<div class="trx-detail-section">' +
+    '<div class="trx-detail-label">Produk yang Dibeli</div>' +
+    '<div style="margin-top:8px;">';
+
+  for (var i = 0; i < trx.items.length; i++) {
+    var it = trx.items[i];
+    var imgSrc = it.image || '';
+    html += '<div class="trx-detail-product">' +
+      (imgSrc ? '<img src="' + imgSrc + '" alt="' + it.name + '">' : '') +
+      '<div class="trx-detail-product-info">' +
+        '<h4>' + it.name + '</h4>' +
+        '<div class="qty">Jumlah: ' + it.qty + ' × ' + formatRupiah(it.price) + '</div>' +
+        '<div class="subtotal">' + formatRupiah(it.price * it.qty) + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  html += '</div></div>';
+
+  // ==================================================
+  // Bagian 5: Total
+  // ==================================================
+  html += '<div class="cart-total" style="padding:14px; background:var(--primary); color:white; border-radius:10px; margin-top:0;">' +
+    '<span>Total</span>' +
+    '<span>' + formatRupiah(trx.total) + '</span>' +
+    '</div>';
+
+  container.innerHTML = html;
+  document.getElementById('trxDetailModal').classList.add('show');
+}
+  
 function cancelTransaction(trxId) {
   if (!confirm('Yakin ingin membatalkan pesanan ini?')) return;
   updateTransactionStatus(trxId, 'cancelled', { cancelledAt: Date.now() });
