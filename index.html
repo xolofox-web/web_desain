@@ -1069,7 +1069,12 @@ var qrImage = payload.qr_image || payload.qr_image_link || payload.qr_url || pay
       box.innerHTML = '<div class="qris-status error">⚠️ Response tidak sesuai<br><details style="margin-top:12px; text-align:left;"><summary style="cursor:pointer; font-size:0.85rem;">Lihat response mentah</summary><pre style="font-size:0.7rem; white-space:pre-wrap; word-break:break-all; background:#fff; padding:8px; border-radius:6px; margin-top:8px; max-height:250px; overflow:auto;">' + JSON.stringify(result, null, 2) + '</pre></details></div><button class="btn-checkout" onclick="closeQrisModal()">Tutup</button>';
       return;
     }
-    updateTransactionStatus(trxId, 'pending', { qrisTrxId: qrisId, qrImage: qrImage, qrString: payload.qr_string || null });
+    updateTransactionStatus(trxId, 'pending', {
+  qrisTrxId: qrisTrxId,
+  qrisUuid: qrisUuid,
+  qrImage: qrImage,
+  qrString: payload.qr_string || null
+});
     qrisExpiredAt = expiredAt ? new Date(expiredAt).getTime() : Date.now() + 15 * 60 * 1000;
     box.innerHTML = '<div class="qris-amount">' + formatRupiah(totalAmount) + '</div>' +
       '<img src="' + qrImage + '" alt="QRIS Code">' +
