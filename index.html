@@ -1034,6 +1034,13 @@ function onWaClick() {
   if (currentQrisTrxId) {
     updateTransactionStatus(currentQrisTrxId, 'waiting', { paidAt: Date.now() });
   }
+
+  // ===== KURANGI STOK =====
+  if (currentQrisCart && currentQrisCart.length > 0) {
+    reduceStock(currentQrisCart);
+    currentQrisCart = null;
+  }
+
   setTimeout(function() {
     cart = [];
     saveCart();
