@@ -865,8 +865,9 @@ async function handleLogin(e) {
   }
 }
 
-function handleLogout() {
+async function handleLogout() {
   if (!confirm('Yakin ingin keluar?')) return;
+  await supabase.auth.signOut();
   clearSession();
   updateUserUI();
   showToast('Anda telah keluar');
