@@ -917,7 +917,7 @@ function renderTransactions() {
     if (t.status === 'pending' || t.status === 'waiting') {
       actionsHTML = '<div class="trx-actions"><button class="btn-cancel" onclick="event.stopPropagation(); cancelTransaction(\'' + t.id + '\')">❌ Batalkan Pesanan</button></div>';
     } else if (t.status === 'paid') {
-      actionsHTML = '<div class="trx-actions"><button class="btn-refund" onclick="refundTransaction(\'' + t.id + '\')">💸 Ajukan Refund (Dana Kembali 100%)</button></div>' +
+      actionsHTML = '<div class="trx-actions"><button class="btn-refund" onclick="event.stopPropagation(); refundTransaction(\'' + t.id + '\')">💸 Ajukan Refund (Dana Kembali 100%)</button></div>' +
         '<div class="refund-note">ℹ️ Pesanan sudah dibayar. Ajukan refund untuk mengembalikan dana Anda secara utuh.</div>';
     }
 
