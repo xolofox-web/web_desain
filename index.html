@@ -1033,6 +1033,12 @@ function openTrxDetail(trxId) {
     } else if (trx.status === 'expired') {
       html += '<img src="' + QRIS_IMAGE_URL + '" alt="QRIS Code" style="opacity:0.5;">';
       html += '<div style="font-size:0.8rem; color:var(--danger); font-weight:700; margin-top:8px;">⏰ Waktu Pembayaran Habis</div>';
+    } else if (trx.status === 'cancelled') {
+      html += '<img src="' + QRIS_DIBATALKAN_IMAGE_URL + '" alt="Dibatalkan">';
+      html += '<div style="font-size:0.8rem; color:var(--danger); font-weight:700; margin-top:8px;">❌ Pesanan Dibatalkan</div>';
+    } else if (trx.status === 'refunded') {
+      html += '<img src="' + QRIS_DIBATALKAN_IMAGE_URL + '" alt="Refund" style="opacity:0.7;">';
+      html += '<div style="font-size:0.8rem; color:#1e40af; font-weight:700; margin-top:8px;">💸 Dana Sedang Di-refund</div>';
     } else {
       html += '<img src="' + QRIS_IMAGE_URL + '" alt="QRIS Code" style="opacity:0.5;">';
     }
