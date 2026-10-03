@@ -920,6 +920,56 @@ function generateTrxId() {
   var rand = Math.floor(Math.random() * 9000 + 1000);
   return 'TRX-' + stamp + '-' + rand;
 }
+  async function saveOrderToSupabase(trx) {
+  var session = getSession();
+  if (!session || !session.userId) return null;
+
+  try {
+    // 1. Simpan order utama
+    var orderResult = await supabase
+      .from('orders')
+      .insert({
+        user_id: session.userId,
+        customer_name: trx.userName,
+        customer_phone: trx.userPhone,
+        total: trx.total,
+        payment_method: trx.payment,
+        status: trx.status,
+        qris_transaction_id: trx.qrisTrxId || null
+      })
+      .select()
+      .single();
+
+    if (orderResult.error) {
+      console.error('Error simpan order:', orderResult.error);
+      return null;
+    }
+
+    var orderId = orderResult.data.id;
+
+    // 2. Simpan item-item pesanan
+    var itemsToInsert = trx.items.map(function(item) {
+      return {
+        order_id: orderId,
+        product_id: item.productId || null,
+        quantity: item.qty,
+        price_at_purchase: item.price
+      };
+    });
+
+    var itemsResult = await supabase
+      .from('order_items')
+      .insert(itemsToInsert);
+
+    if (itemsResult.error) {
+      console.error('Error simpan items:', itemsResult.error);
+    }
+
+    return orderId;
+  } catch (err) {
+    console.error('Supabase error:', err);
+    return null;
+  }
 
 function openTransactions() {
   if (!isLoggedIn()) {
