@@ -992,8 +992,11 @@ function buildWaMessage(name, phone, email, session, trxId, cartItems, total, pa
 /* =========================================================
    QRIS
    ========================================================= */
+var currentQrisCart = null;
+
 function processQrisPayment(totalAmount, customerData, trxId, cartSnapshot) {
   currentQrisTrxId = trxId;
+  currentQrisCart = cartSnapshot;
   var box = document.getElementById('qrisBox');
   document.getElementById('qrisModal').classList.add('show');
 
