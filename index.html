@@ -1143,7 +1143,7 @@ function submitOrder(e) {
   var session = getSession();
 
   var trxId = generateTrxId();
-  var trxItems = cart.map(function(i) { return { name: i.name, qty: i.qty, price: i.price }; });
+  var trxItems = cart.map(function(i) { return { name: i.name, qty: i.qty, price: i.price, image: i.image }; });
 
   var trx = {
     id: trxId,
