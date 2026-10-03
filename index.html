@@ -941,10 +941,15 @@ function submitOrder(e) {
     return;
   }
 
-  var message = buildWaMessage(name, phone, email, session, trxId, cartSnapshot, total, payment);
+    var message = buildWaMessage(name, phone, email, session, trxId, cartSnapshot, total, payment);
   window.open('https://wa.me/' + WA_NUMBER + '?text=' + message, '_blank');
+
+  // ===== KURANGI STOK =====
+  reduceStock(cartSnapshot);
+
   cart = [];
-  saveCart(); updateCartUI();
+  saveCart();
+  updateCartUI();
   closeModal('checkoutModal');
   showToast('Pesanan dikirim ke WhatsApp ✅');
 }
