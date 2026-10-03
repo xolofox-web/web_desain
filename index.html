@@ -1077,13 +1077,13 @@ var qrImage = payload.qr_image || payload.qr_image_link || payload.qr_url || pay
 });
     qrisExpiredAt = expiredAt ? new Date(expiredAt).getTime() : Date.now() + 15 * 60 * 1000;
     box.innerHTML = '<div class="qris-amount">' + formatRupiah(totalAmount) + '</div>' +
-      '<img src="' + qrImage + '" alt="QRIS Code">' +
-      '<div class="qris-timer">Sisa waktu: <b id="qrisTimer">--:--</b></div>' +
-      '<div class="qris-info">ID Pesanan: <b>' + trxId + '</b><br>ID QRIS: <b style="font-family:monospace; font-size:0.75rem;">' + qrisId + '</b></div>' +
-      '<div class="qris-status pending" id="qrisStatus">⏳ Menunggu pembayaran...</div>' +
-      '<button class="btn-checkout" onclick="manualCheckQrisStatus(\'' + qrisId + '\')">🔄 Cek Status Sekarang</button>';
-    startQrisTimer();
-    startQrisPolling(qrisId, customerData, trxId);
+  '<img src="' + qrImage + '" alt="QRIS Code">' +
+  '<div class="qris-timer">Sisa waktu: <b id="qrisTimer">--:--</b></div>' +
+  '<div class="qris-info">ID Pesanan: <b>' + trxId + '</b><br>ID Transaksi: <b style="font-family:monospace; font-size:0.75rem;">' + qrisTrxId + '</b></div>' +
+  '<div class="qris-status pending" id="qrisStatus">⏳ Menunggu pembayaran...</div>' +
+  '<button class="btn-checkout" onclick="manualCheckQrisStatus(\'' + qrisTrxId + '\')">🔄 Cek Status Sekarang</button>';
+startQrisTimer();
+startQrisPolling(qrisTrxId, customerData, trxId);
   } catch (err) {
     console.error(err);
     updateTransactionStatus(trxId, 'expired', { error: err.message });
