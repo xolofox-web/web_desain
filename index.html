@@ -761,7 +761,7 @@ function switchAuthTab(tab) {
   document.getElementById('registerForm').classList.toggle('active', tab === 'register');
 }
 
-function handleRegister(e) {
+async function handleRegister(e) {
   e.preventDefault();
   var name = document.getElementById('regName').value.trim();
   var email = document.getElementById('regEmail').value.trim().toLowerCase();
@@ -770,12 +770,43 @@ function handleRegister(e) {
 
   if (password.length < 6) { showToast('Password minimal 6 karakter'); return; }
 
-  var users = getUsers();
-  if (users.find(function(u) { return u.email === email; })) {
-    showToast('Email sudah terdaftar, silakan login');
-    switchAuthTab('login');
-    return;
+  try {
+    var result = await supabase.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: { name: name, phone: phone }
+      }
+    });
+
+    if (result.error) {
+      showToast('Gagal daftar: ' + result.error.message);
+      return;
+    }
+
+    // Kalau butuh konfirmasi email, kasih tahu user
+    if (result.data.user && !result.data.session) {
+      showToast('Cek email untuk verifikasi akun');
+      closeModal('authModal');
+      return;
+    }
+
+    setSession({ name: name, email: email, phone: phone });
+    updateUserUI();
+    closeModal('authModal');
+    showToast('Pendaftaran berhasil! Selamat datang, ' + name);
+
+    if (window.pendingCheckout) {
+      window.pendingCheckout = false;
+      setTimeout(openCheckout, 400);
+    } else if (window.pendingTransactions) {
+      window.pendingTransactions = false;
+      setTimeout(openTransactions, 400);
+    }
+  } catch (err) {
+    showToast('Error: ' + err.message);
   }
+}
 
   users.push({ name: name, email: email, phone: phone, password: password, createdAt: Date.now() });
   saveUsers(users);
