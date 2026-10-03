@@ -561,6 +561,45 @@ function updateCartUI() {
     '<div class="cart-summary-row total"><span>Total</span><span>' + formatRupiah(subtotal) + '</span></div>';
 }
 
+  /* =========================================================
+   KURANGI STOK SETELAH PEMBAYARAN
+   ========================================================= */
+function reduceStock(cartItems) {
+  if (!cartItems || cartItems.length === 0) return;
+
+  for (var i = 0; i < cartItems.length; i++) {
+    var item = cartItems[i];
+    var product = products.find(function(p) { return p.id === item.id; });
+    if (!product) continue;
+
+    // Kurangi stok
+    product.stock = Math.max(0, (product.stock || 0) - item.qty);
+    console.log('Stok ' + product.name + ' dikurangi ' + item.qty + ' → sisa ' + product.stock);
+  }
+
+  // Simpan perubahan produk ke localStorage (opsional)
+  try {
+    localStorage.setItem('ayven_products_stock', JSON.stringify(
+      products.map(function(p) { return { id: p.id, stock: p.stock }; })
+    ));
+  } catch (e) {}
+
+  // Refresh tampilan produk
+  renderProducts();
+  updateCartUI();
+}
+
+/* ---------- Load stok tersimpan ---------- */
+function loadSavedStock() {
+  try {
+    var saved = JSON.parse(localStorage.getItem('ayven_products_stock')) || [];
+    for (var i = 0; i < saved.length; i++) {
+      var product = products.find(function(p) { return p.id === saved[i].id; });
+      if (product) product.stock = saved[i].stock;
+    }
+  } catch (e) {}
+}
+  
 function openCart() { document.getElementById('cartPanel').classList.add('open'); }
 function closeCart() { document.getElementById('cartPanel').classList.remove('open'); }
 
