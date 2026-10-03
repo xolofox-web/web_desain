@@ -1,5 +1,5 @@
-// api/deposit/check/[transaksiId].js
-// Vercel Serverless Function — GET /api/deposit/check/:transaksiId
+// api/deposit/cancel/[transaksiId].js
+// Vercel Serverless Function — POST /api/deposit/cancel/:transaksiId
 
 import crypto from "node:crypto";
 
@@ -15,15 +15,13 @@ function signRequest(method, path, body, secret) {
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
-  res.setHeader("Pragma", "no-cache");
-  res.setHeader("Expires", "0");
+  res.setHeader("Cache-Control", "no-store");
 
   if (req.method === "OPTIONS") return res.status(200).end();
 
-  if (req.method !== "GET") {
+  if (req.method !== "POST") {
     return res.status(405).json({ success: false, status: "error", message: "Method not allowed" });
   }
 
@@ -40,12 +38,12 @@ export default async function handler(req, res) {
       return res.status(500).json({ success: false, status: "error", message: "Konfigurasi server belum lengkap" });
     }
 
-    const path = `/api/deposit/check/${transaksiId}`;
-    const { timestamp, signature } = signRequest("GET", path, "", API_SECRET);
+    const path = `/api/deposit/cancel/${transaksiId}`;
+    const { timestamp, signature } = signRequest("POST", path, "", API_SECRET);
     const url = `https://austinstore.id${path}?apikey=${API_KEY}`;
 
     const response = await fetch(url, {
-      method: "GET",
+      method: "POST",
       headers: {
         "Accept": "application/json",
         "X-Timestamp": timestamp,
@@ -54,7 +52,7 @@ export default async function handler(req, res) {
     });
 
     const responseText = await response.text();
-    console.log("Check response:", responseText);
+    console.log("Cancel response:", responseText);
 
     let data;
     try {
@@ -64,8 +62,9 @@ export default async function handler(req, res) {
     }
 
     return res.status(response.status).json(data);
+
   } catch (err) {
-    console.error("Error check:", err);
+    console.error("Error cancel:", err);
     return res.status(500).json({ success: false, status: "error", message: err.message });
   }
 }
