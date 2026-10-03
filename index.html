@@ -493,6 +493,31 @@ function addFromDetail() { addToCart(currentProduct.id, currentQty); closeModal(
 function quickAdd(id) { addToCart(id, 1); }
 function addToCart(id, qty) {
   var product = products.find(function(p) { return p.id === id; });
+  if (!product) return;
+
+  // Proteksi: cek stok
+  if (!product.stock || product.stock <= 0) {
+    showToast('⚠️ Stok habis — tidak dapat ditambahkan');
+    return;
+  }
+
+  var existing = cart.find(function(i) { return i.id === id; });
+  var currentQtyInCart = existing ? existing.qty : 0;
+
+  // Cek total (cart + baru) tidak melebihi stok
+  if (currentQtyInCart + qty > product.stock) {
+    showToast('⚠️ Stok tidak mencukupi. Tersisa: ' + product.stock);
+    return;
+  }
+
+  if (existing) { existing.qty += qty; }
+  else { cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, qty: qty }); }
+
+  saveCart();
+  updateCartUI();
+  showToast(product.name + ' ditambahkan ke keranjang');
+}
+  var product = products.find(function(p) { return p.id === id; });
   var existing = cart.find(function(i) { return i.id === id; });
   if (existing) { existing.qty += qty; }
   else { cart.push({ id: product.id, name: product.name, price: product.price, image: product.image, qty: qty }); }
