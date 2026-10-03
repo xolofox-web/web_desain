@@ -1139,7 +1139,35 @@ function startQrisTimer() {
   }, 1000);
 }
 
-function startQrisPolling(qrisId, customerData, trxId) {
+function startQrisPolling(qrisTrxId, customerData, trxId) {
+  clearInterval(qrisPollingInterval);
+  qrisPollingInterval = setInterval(async function() {
+    var modal = document.getElementById('qrisModal');
+    if (!modal.classList.contains('show')) { clearInterval(qrisPollingInterval); return; }
+    try {
+      var response = await fetch('/api/deposit/check/' + encodeURIComponent(qrisTrxId) + '?_=' + Date.now(), { cache: 'no-store' });
+      var result = await response.json();
+      var status = result.status;
+      if (status === 'paid') {
+        clearInterval(qrisPollingInterval);
+        clearInterval(qrisTimerInterval);
+        updateQrisStatusUI('paid', '✅ Pembayaran berhasil!');
+        if (trxId) updateTransactionStatus(trxId, 'paid', { paidAt: Date.now() });
+        if (supabase && qrisTrxId) {
+          supabase.from('orders').update({ status: 'paid' }).eq('qris_transaction_id', qrisTrxId).then(function(res) {
+            if (res.error) console.error('Error update status:', res.error);
+          });
+        }
+        setTimeout(function() { finishQrisPayment(customerData, trxId); }, 2000);
+      } else if (status === 'expired') {
+        clearInterval(qrisPollingInterval);
+        clearInterval(qrisTimerInterval);
+        updateQrisStatusUI('expired', '❌ QRIS kadaluarsa');
+        if (trxId) updateTransactionStatus(trxId, 'expired');
+      }
+    } catch (err) { console.warn('Polling error:', err); }
+  }, 5000);
+}
   clearInterval(qrisPollingInterval);
   qrisPollingInterval = setInterval(async function() {
     var modal = document.getElementById('qrisModal');
