@@ -1429,10 +1429,23 @@ function initApp() {
   }
 
   // Render awal
-  renderProducts();
-  updateCartUI();
+renderProducts();
+updateCartUI();
+
+// Cek session Supabase yang masih aktif
+supabase.auth.getSession().then(function(res) {
+  if (res.data && res.data.session && res.data.session.user) {
+    var user = res.data.session.user;
+    var meta = user.user_metadata || {};
+    setSession({
+      name: meta.name || user.email.split('@')[0],
+      email: user.email,
+      phone: meta.phone || '',
+      userId: user.id
+    });
+  }
   updateUserUI();
-}
+});
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
