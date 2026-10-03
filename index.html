@@ -1040,6 +1040,7 @@ async function processQrisPayment(totalAmount, customerData, trxId) {
   var box = document.getElementById('qrisBox');
   document.getElementById('qrisModal').classList.add('show');
   box.innerHTML = '<div class="qris-loading"><div class="spinner"></div><p>Membuat kode QRIS...</p></div>';
+
   try {
     var response = await fetch('/api/create-payment', {
       method: 'POST',
@@ -1048,42 +1049,70 @@ async function processQrisPayment(totalAmount, customerData, trxId) {
     });
     var result = await response.json();
     console.log('Full response:', result);
-    if (!response.ok || result.success === false) throw new Error(result.message || result.error || 'Gagal membuat QRIS');
+
+    if (!response.ok || result.success === false) {
+      throw new Error(result.message || result.error || 'Gagal membuat QRIS');
+    }
+
     var payload = result.deposit || result.data || result;
 
-// UUID (contoh: 93cd4c29-7078-4275-998f-8c5b09af58e7)
-var qrisUuid = payload.id || null;
+    // UUID (contoh: 93cd4c29-7078-4275-998f-8c5b09af58e7)
+    var qrisUuid = payload.id || null;
 
-// Transaction ID (contoh: APG-93CD4C29-...)
-var qrisTrxId = payload.transaction_id || payload.transaksi_id || payload.trx_id || null;
+    // Transaction ID (contoh: APG-93CD4C29-...)
+    var qrisTrxId = payload.transaction_id
+      || payload.transaksi_id
+      || payload.trx_id
+      || payload.order_id
+      || payload.deposit_id
+      || payload.reference_id
+      || payload.reference
+      || null;
 
-// Fallback: bikin dari UUID kalau tidak ada
-if (!qrisTrxId && qrisUuid) {
-  qrisTrxId = 'APG-' + String(qrisUuid).toUpperCase();
-}
-if (!qrisTrxId) qrisTrxId = qrisUuid;
+    // Fallback: bikin dari UUID kalau tidak ada
+    if (!qrisTrxId && qrisUuid) {
+      qrisTrxId = 'APG-' + String(qrisUuid).toUpperCase();
+    }
+    if (!qrisTrxId) qrisTrxId = qrisUuid;
 
-var qrImage = payload.qr_image || payload.qr_image_link || payload.qr_url || payload.qr_code || payload.qris_url || payload.qris_image || payload.qr_string || payload.payment_url;
-    var expiredAt = payload.expired_at || payload.expires_at || payload.expired_at_iso || payload.expiry_time;
-    if (!qrisId || !qrImage) {
+    var qrImage = payload.qr_image
+      || payload.qr_image_link
+      || payload.qr_url
+      || payload.qr_code
+      || payload.qris_url
+      || payload.qris_image
+      || payload.qr_string
+      || payload.payment_url;
+
+    var expiredAt = payload.expired_at
+      || payload.expires_at
+      || payload.expired_at_iso
+      || payload.expiry_time;
+
+    if (!qrisTrxId || !qrImage) {
       box.innerHTML = '<div class="qris-status error">⚠️ Response tidak sesuai<br><details style="margin-top:12px; text-align:left;"><summary style="cursor:pointer; font-size:0.85rem;">Lihat response mentah</summary><pre style="font-size:0.7rem; white-space:pre-wrap; word-break:break-all; background:#fff; padding:8px; border-radius:6px; margin-top:8px; max-height:250px; overflow:auto;">' + JSON.stringify(result, null, 2) + '</pre></details></div><button class="btn-checkout" onclick="closeQrisModal()">Tutup</button>';
       return;
     }
+
     updateTransactionStatus(trxId, 'pending', {
-  qrisTrxId: qrisTrxId,
-  qrisUuid: qrisUuid,
-  qrImage: qrImage,
-  qrString: payload.qr_string || null
-});
+      qrisTrxId: qrisTrxId,
+      qrisUuid: qrisUuid,
+      qrImage: qrImage,
+      qrString: payload.qr_string || null
+    });
+
     qrisExpiredAt = expiredAt ? new Date(expiredAt).getTime() : Date.now() + 15 * 60 * 1000;
+
     box.innerHTML = '<div class="qris-amount">' + formatRupiah(totalAmount) + '</div>' +
-  '<img src="' + qrImage + '" alt="QRIS Code">' +
-  '<div class="qris-timer">Sisa waktu: <b id="qrisTimer">--:--</b></div>' +
-  '<div class="qris-info">ID Pesanan: <b>' + trxId + '</b><br>ID Transaksi: <b style="font-family:monospace; font-size:0.75rem;">' + qrisTrxId + '</b></div>' +
-  '<div class="qris-status pending" id="qrisStatus">⏳ Menunggu pembayaran...</div>' +
-  '<button class="btn-checkout" onclick="manualCheckQrisStatus(\'' + qrisTrxId + '\')">🔄 Cek Status Sekarang</button>';
-startQrisTimer();
-startQrisPolling(qrisTrxId, customerData, trxId);
+      '<img src="' + qrImage + '" alt="QRIS Code">' +
+      '<div class="qris-timer">Sisa waktu: <b id="qrisTimer">--:--</b></div>' +
+      '<div class="qris-info">ID Pesanan: <b>' + trxId + '</b><br>ID Transaksi: <b style="font-family:monospace; font-size:0.75rem;">' + qrisTrxId + '</b></div>' +
+      '<div class="qris-status pending" id="qrisStatus">⏳ Menunggu pembayaran...</div>' +
+      '<button class="btn-checkout" onclick="manualCheckQrisStatus(\'' + qrisTrxId + '\')">🔄 Cek Status Sekarang</button>';
+
+    startQrisTimer();
+    startQrisPolling(qrisTrxId, customerData, trxId);
+
   } catch (err) {
     console.error(err);
     updateTransactionStatus(trxId, 'expired', { error: err.message });
