@@ -945,21 +945,30 @@ async function updateStockInSupabase(productId, newStock) {
 /* =========================================================
    STOK
    ========================================================= */
-function reduceStock(cartItems) {
+async function reduceStock(cartItems) {
   if (!cartItems || cartItems.length === 0) return;
+
+  // Kurangi stok lokal (langsung)
   for (var i = 0; i < cartItems.length; i++) {
     var item = cartItems[i];
     var product = products.find(function(p) { return p.id === item.id; });
     if (!product) continue;
     product.stock = Math.max(0, (product.stock || 0) - item.qty);
   }
-  try {
-    localStorage.setItem('ayven_products_stock', JSON.stringify(
-      products.map(function(p) { return { id: p.id, stock: p.stock }; })
-    ));
-  } catch (e) {}
+
   renderProducts();
   updateCartUI();
+
+  // Update ke Supabase (async)
+  if (supabase) {
+    for (var j = 0; j < cartItems.length; j++) {
+      var it = cartItems[j];
+      var prod = products.find(function(p) { return p.id === it.id; });
+      if (!prod) continue;
+      await updateStockInSupabase(it.id, prod.stock);
+    }
+    console.log('✅ Stok di Supabase terupdate');
+  }
 }
 
 function loadSavedStock() {
