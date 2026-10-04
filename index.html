@@ -1544,17 +1544,34 @@ function initApp() {
     });
   }
 
-  loadSavedStock();
-  renderProducts();
-  updateCartUI();
-  updateUserUI();
-
-  // Info koneksi Supabase ke console
-  if (supabaseConnected) {
-    console.log('✅ Supabase terhubung ke project:', SUPABASE_URL);
+    // Coba load dari Supabase dulu
+  if (supabase) {
+    loadProductsFromSupabase().then(function(success) {
+      if (success) {
+        console.log('✅ Produk dari Supabase berhasil dimuat');
+        // Hapus cache localStorage karena sudah pakai Supabase
+        try { localStorage.removeItem('ayven_products_stock'); } catch (e) {}
+      } else {
+        // Fallback ke localStorage
+        loadSavedStock();
+      }
+      renderProducts();
+      updateCartUI();
+      updateUserUI();
+    }).catch(function() {
+      loadSavedStock();
+      renderProducts();
+      updateCartUI();
+      updateUserUI();
+    });
   } else {
-    console.warn('⚠️ Supabase tidak terhubung - website pakai localStorage');
+    loadSavedStock();
+    renderProducts();
+    updateCartUI();
+    updateUserUI();
   }
+
+  console.log('✅ App initialized');
 }
 
 if (document.readyState === 'loading') {
