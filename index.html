@@ -892,6 +892,56 @@ function handleChangePassword(e) {
   showToast('✅ Password berhasil diubah!');
 }
 
+  /* =========================================================
+   PRODUK DARI SUPABASE
+   ========================================================= */
+async function loadProductsFromSupabase() {
+  if (!supabase) return false;
+  try {
+    var result = await supabase.from('products').select('*').order('id');
+    if (result.error) {
+      console.warn('Gagal load products:', result.error);
+      return false;
+    }
+    if (result.data && result.data.length > 0) {
+      products = result.data.map(function(p) {
+        return {
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          category: p.category,
+          desc: p.description || '',
+          image: p.image,
+          stock: p.stock
+        };
+      });
+      console.log('✅ Produk dimuat dari Supabase:', products.length, 'item');
+      return true;
+    }
+  } catch (err) {
+    console.error('Error load products:', err);
+  }
+  return false;
+}
+
+async function updateStockInSupabase(productId, newStock) {
+  if (!supabase) return false;
+  try {
+    var result = await supabase
+      .from('products')
+      .update({ stock: newStock })
+      .eq('id', productId);
+    if (result.error) {
+      console.warn('Gagal update stok:', result.error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error update stok:', err);
+    return false;
+  }
+}
+  
 /* =========================================================
    STOK
    ========================================================= */
