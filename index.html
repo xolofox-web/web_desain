@@ -6,7 +6,7 @@
     <title>Ayven - Toko Online Terpercaya</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS -->
+    <!-- Supabase JS (Diletakkan di head agar siap sebelum script utama) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -182,119 +182,144 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC UTAMA -->
     <script>
         // ==========================================
-        // 1. KONFIGURASI SUPABASE
-        // Ganti dengan URL dan Anon Key dari project Supabase Anda
+        // 1. KONFIGURASI & MOCK DATA (ANTI GAGAL)
         // ==========================================
-        const SUPABASE_URL = 'sb_publishable_pKZED9bRr-uSeGtuX1NMyw_xVlCcXNj'; // <-- GANTI INI
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhheWVxYmNhbG1iaG9hZG5sanppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMjQ2OTksImV4cCI6MjEwNjcwMDY5OX0.Brpv_DjWXTIMyMV2v3jk7mMq-3-y9WWLmssH2s3mgsg'; // <-- GANTI INI
-        
         let supabaseClient = null;
         let isSupabaseReady = false;
-
-        // Cek apakah user sudah mengisi kredensial Supabase
-        if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
-            try {
-                if (typeof window.supabase !== 'undefined') {
-                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                    isSupabaseReady = true;
-                    console.log("✅ Supabase berhasil diinisialisasi.");
-                } else {
-                    console.warn("⚠️ Library Supabase tidak ditemukan di window.");
-                }
-            } catch (error) {
-                console.error("❌ Gagal inisialisasi Supabase:", error);
-            }
-        } else {
-            console.warn("⚠️ Supabase URL/Key belum diisi. Menggunakan mode Mock (Dummy) untuk pengujian UI.");
-        }
-
-        // State Aplikasi
-        let user = null;
-        let cart = [];
-        let currentOrder = null;
         
-        // Mock Data Produk (Selalu dimuat jika Supabase tidak siap)
+        // Ganti dengan URL dan Anon Key dari project Supabase Anda
+        // Biarkan seperti ini jika belum siap, website akan berjalan di mode simulasi
+        const SUPABASE_URL = 'sb_publishable_pKZED9bRr-uSeGtuX1NMyw_xVlCcXNj'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhheWVxYmNhbG1iaG9hZG5sanppIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTExMjQ2OTksImV4cCI6MjEwNjcwMDY5OX0.Brpv_DjWXTIMyMV2v3jk7mMq-3-y9WWLmssH2s3mgsg'; 
+
+        // Data Produk Simulasi (Langsung tampil)
         const mockProducts = [
-            { id: 1, name: 'alight motion', price: 10000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183001_765_r9nrssyn.jpg', category: 'Premium' },
+            { id: 1, name: 'alight motion', price: 10000, image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Alight_Motion_Logo.png/600px-Alight_Motion_Logo.png', category: 'Premium' },
             { id: 2, name: 'capcut', price: 25000, image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/CapCut_logo.svg/1200px-CapCut_logo.svg.png', category: 'Premium' },
             { id: 3, name: 'Spotify', price: 21000, image_url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Spotify_icon.svg/1200px-Spotify_icon.svg.png', category: 'Premium' },
             { id: 4, name: 'Canva Pro', price: 15000, image_url: 'https://upload.wikimedia.org/wikipedia/commons/0/08/Canva_icon_2021.svg', category: 'Premium' }
         ];
 
+        let user = null;
+        let cart = [];
+        let currentOrder = null;
+
         // ==========================================
-        // 2. INISIALISASI UTAMA (Dipanggil saat halaman selesai dimuat)
+        // 2. FUNGSI UTAMA (Dijalankan saat halaman dimuat)
         // ==========================================
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("🚀 DOM selesai dimuat. Memulai aplikasi...");
-
-            // 1. Render Produk
-            if (isSupabaseReady) {
-                fetchProductsFromSupabase();
-            } else {
-                renderProducts(mockProducts);
-            }
-
-            // 2. Setup Auth
-            if (isSupabaseReady) {
-                checkUser();
-                supabaseClient.auth.onAuthStateChange((event, session) => {
-                    user = session?.user || null;
-                    updateAuthUI();
-                });
-            } else {
-                updateAuthUI(); 
-            }
-
-            // 3. Pasang Event Listener ke Tombol (Mencegah error jika JS crash)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("✅ Halaman dimuat. Menjalankan aplikasi...");
+            
+            // 1. Langsung tampilkan produk simulasi agar tidak stuck di "Memuat produk..."
+            renderProducts(mockProducts);
+            
+            // 2. Pasang fungsi klik ke semua tombol
             setupEventListeners();
+            
+            // 3. Coba sambungkan ke Supabase (jika dikonfigurasi)
+            initSupabase();
         });
 
-        // ==========================================
-        // 3. FUNGSI EVENT LISTENER
-        // ==========================================
+        function initSupabase() {
+            if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+                console.log("ℹ️ Mode Simulasi: Supabase belum dikonfigurasi.");
+                return;
+            }
+
+            try {
+                if (typeof window.supabase !== 'undefined') {
+                    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    isSupabaseReady = true;
+                    console.log("✅ Supabase terhubung.");
+                    
+                    // Cek sesi login yang tersimpan
+                    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                        user = session?.user || null;
+                        updateAuthUI();
+                    });
+
+                    // Pantau perubahan status login
+                    supabaseClient.auth.onAuthStateChange((event, session) => {
+                        user = session?.user || null;
+                        updateAuthUI();
+                    });
+
+                    // Ambil produk dari database Supabase (jika ada)
+                    fetchProductsFromSupabase();
+                } else {
+                    console.warn("⚠️ Library Supabase tidak ditemukan. Tetap di Mode Simulasi.");
+                }
+            } catch (error) {
+                console.error("❌ Gagal terhubung ke Supabase. Tetap di Mode Simulasi.", error);
+            }
+        }
+
         function setupEventListeners() {
-            console.log("🔗 Memasang event listener...");
-            
-            // Login Button
+            // Tombol Login
             const loginBtn = document.getElementById('loginBtn');
             if (loginBtn) loginBtn.addEventListener('click', () => toggleLoginModal(true));
             
-            // Logout Button
+            // Tombol Logout
             const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) logoutBtn.addEventListener('click', () => {
-                if (isSupabaseReady) supabaseClient.auth.signOut();
+            if (logoutBtn) logoutBtn.addEventListener('click', async () => {
+                if (isSupabaseReady) await supabaseClient.auth.signOut();
                 user = null;
                 cart = [];
                 renderCart();
                 updateAuthUI();
             });
 
-            // Cart Button
+            // Tombol Keranjang
             const cartBtn = document.getElementById('cartBtn');
             if (cartBtn) cartBtn.addEventListener('click', () => toggleCart());
 
-            // Login Submit Button
+            // Tombol Submit Login
             const doLoginBtn = document.getElementById('doLoginBtn');
             if (doLoginBtn) doLoginBtn.addEventListener('click', handleLogin);
         }
 
         // ==========================================
-        // 4. FITUR AUTH
+        // 3. FUNGSI PRODUK
         // ==========================================
-        async function checkUser() {
+        async function fetchProductsFromSupabase() {
             if (!isSupabaseReady) return;
             try {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                user = session?.user || null;
-                updateAuthUI();
+                const { data, error } = await supabaseClient.from('products').select('*');
+                if (error) throw error;
+                if (data && data.length > 0) {
+                    renderProducts(data);
+                }
             } catch (error) {
-                console.error("Error cek user:", error);
+                console.error("Gagal ambil produk dari Supabase, pakai data simulasi.", error);
             }
         }
 
+        function renderProducts(products) {
+            const grid = document.getElementById('productGrid');
+            if (!grid) return;
+            
+            grid.innerHTML = ''; // Hapus tulisan "Memuat produk..."
+            
+            products.forEach(prod => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow-sm border p-4 flex flex-col items-center text-center hover:shadow-md transition';
+                card.innerHTML = `
+                    <img src="${prod.image_url}" alt="${prod.name}" class="w-20 h-20 object-contain mb-3" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                    <h4 class="font-bold text-gray-800 text-sm mb-1 capitalize">${prod.name}</h4>
+                    <p class="text-blue-800 font-bold mb-3">Rp${prod.price.toLocaleString('id-ID')}</p>
+                    <button onclick="addToCart(${prod.id}, '${prod.name}', ${prod.price}, '${prod.image_url}')" class="w-full bg-blue-800 text-white py-1.5 rounded-lg text-sm font-medium hover:bg-blue-900 transition">+ Keranjang</button>
+                `;
+                grid.appendChild(card);
+            });
+            console.log("📦 Produk berhasil dirender ke layar.");
+        }
+
+        // ==========================================
+        // 4. FUNGSI AUTH
+        // ==========================================
         function updateAuthUI() {
             const loginBtn = document.getElementById('loginBtn');
             const logoutBtn = document.getElementById('logoutBtn');
@@ -312,11 +337,11 @@
             const password = document.getElementById('passwordInput').value;
             
             if (!isSupabaseReady) {
-                // Mock Login
-                user = { email: email || 'user@mock.com' };
+                // Simulasi Login
+                user = { email: email || 'user@simulasi.com' };
                 toggleLoginModal(false);
                 updateAuthUI();
-                alert('Login berhasil (Mode Mock)');
+                alert('Login Berhasil (Mode Simulasi)');
                 return;
             }
 
@@ -339,49 +364,17 @@
         }
 
         // ==========================================
-        // 5. FITUR PRODUK
+        // 5. FUNGSI KERANJANG
         // ==========================================
-        async function fetchProductsFromSupabase() {
-            try {
-                const { data, error } = await supabaseClient.from('products').select('*');
-                if (error) throw error;
-                if (data && data.length > 0) {
-                    renderProducts(data);
-                } else {
-                    renderProducts(mockProducts); // Fallback jika DB kosong
-                }
-            } catch (error) {
-                console.error("Gagal mengambil produk dari Supabase:", error);
-                renderProducts(mockProducts); // Fallback jika error
-            }
-        }
-
-        function renderProducts(products) {
-            const grid = document.getElementById('productGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            if (products.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Produk tidak ditemukan.</div>';
+        window.addToCart = function(id, name, price, imageUrl) {
+            if (!user) {
+                alert('Silakan login terlebih dahulu untuk membeli produk.');
+                toggleLoginModal(true);
                 return;
             }
 
-            products.forEach(prod => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border p-4 flex flex-col items-center text-center hover:shadow-md transition';
-                card.innerHTML = `
-                    <img src="${prod.image_url}" alt="${prod.name}" class="w-20 h-20 object-contain mb-3" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
-                    <h4 class="font-bold text-gray-800 text-sm mb-1 capitalize">${prod.name}</h4>
-                    <p class="text-blue-800 font-bold mb-3">Rp${prod.price.toLocaleString('id-ID')}</p>
-                    <button onclick="addToCart(${prod.id}, '${prod.name}', ${prod.price}, '${prod.image_url}')" class="w-full bg-blue-800 text-white py-1.5 rounded-lg text-sm font-medium hover:bg-blue-900 transition">+ Keranjang</button>
-                `;
-                grid.appendChild(card);
-            });
-            console.log("📦 Produk berhasil dirender.");
-        }
-
-        // ==========================================
-        // 6. FITUR KERANJANG
-        // ==========================================
-        window.addToCart = function(id, name, price, imageUr
+            const existingItem = cart.find(item => item.id === id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ id, name, price, image_url: imageUrl, 
