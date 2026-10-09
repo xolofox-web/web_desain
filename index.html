@@ -98,6 +98,38 @@
         </div>
     </footer>
 
+    <!-- PRODUCT DETAIL MODAL -->
+    <div id="productDetailModal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6 relative">
+            <button onclick="closeProductDetail()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 rounded-full p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            
+            <img id="detailImage" src="" alt="Detail Produk" class="w-32 h-32 object-contain mx-auto mb-4 mt-2">
+            <h3 id="detailName" class="text-xl font-bold text-center text-gray-800 mb-1">Nama Produk</h3>
+            <p id="detailPrice" class="text-blue-800 font-bold text-center text-lg mb-2">Rp0</p>
+            <p class="text-sm text-center text-gray-500 mb-4">Tersedia: <span id="detailStock" class="font-semibold text-gray-700">0</span> pcs</p>
+            
+            <div class="bg-gray-50 p-3 rounded-lg mb-4 text-sm text-gray-600 border">
+                <p class="font-semibold text-gray-800 mb-1">Deskripsi Produk:</p>
+                <p id="detailDesc" class="leading-relaxed">Deskripsi produk...</p>
+            </div>
+
+            <div class="flex items-center justify-between mb-5">
+                <span class="text-sm font-semibold text-gray-700">Jumlah Beli:</span>
+                <div class="flex items-center border rounded-lg overflow-hidden">
+                    <button onclick="updateDetailQty(-1)" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 font-bold text-lg">-</button>
+                    <span id="detailQty" class="px-4 py-1.5 font-semibold border-x">1</span>
+                    <button onclick="updateDetailQty(1)" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 font-bold text-lg">+</button>
+                </div>
+            </div>
+
+            <button id="addToCartFromDetailBtn" onclick="addToCartFromDetail()" class="w-full bg-blue-800 text-white py-3 rounded-lg font-bold hover:bg-blue-900 transition">
+                + Tambah ke Keranjang
+            </button>
+        </div>
+    </div>
+
     <!-- CART MODAL -->
     <div id="cartModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-end">
         <div class="bg-white w-full max-w-md h-full flex flex-col shadow-2xl transform transition-transform duration-300 translate-x-full" id="cartContent">
@@ -135,17 +167,13 @@
     <div id="loginModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
             <h2 id="authModalTitle" class="text-xl font-bold mb-4 text-center">Masuk ke Ayven</h2>
-            
             <input type="email" id="emailInput" placeholder="Email" class="w-full border p-3 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <input type="password" id="passwordInput" placeholder="Kata Sandi" class="w-full border p-3 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            
             <button id="doAuthBtn" class="w-full bg-blue-800 text-white py-3 rounded-lg font-bold hover:bg-blue-900 transition mb-2">Masuk</button>
-            
             <p class="text-center text-sm mt-3 text-gray-600">
                 <span id="authToggleText">Belum punya akun? </span>
                 <a href="#" id="authToggleLink" class="text-blue-800 font-semibold hover:underline">Daftar</a>
             </p>
-
             <button onclick="toggleLoginModal(false)" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-medium hover:bg-gray-300 transition mt-4">Batal</button>
         </div>
     </div>
@@ -160,12 +188,9 @@
                 <p><span class="text-gray-500">Jumlah:</span> <span id="trxQuantity" class="font-semibold"></span></p>
                 <p><span class="text-gray-500">Total:</span> <span id="trxTotalPrice" class="font-bold text-blue-800"></span></p>
             </div>
-            
-            <!-- BAGIAN GAMBAR YANG DIUBAH MENJADI 1:1 (aspect-square) -->
             <div class="mb-4">
                 <img id="qrisImage" src="https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261003_182340_580_8hr1cltc.jpg" alt="QRIS" class="w-full aspect-square object-contain rounded-lg border bg-white">
             </div>
-            
             <div id="trxActions" class="space-y-2">
                 <button id="cancelOrderBtn" onclick="cancelOrder()" class="w-full bg-red-100 text-red-600 py-2.5 rounded-lg font-semibold hover:bg-red-200 transition">Batalkan Pesanan</button>
                 <button id="simulatePayBtn" onclick="simulatePayment()" class="w-full bg-blue-100 text-blue-800 py-2.5 rounded-lg font-semibold hover:bg-blue-200 transition">Saya Sudah Bayar</button>
@@ -180,8 +205,8 @@
         // ==========================================
         // 1. KONFIGURASI SUPABASE
         // ==========================================
-        const SUPABASE_URL = 'https://xayeqbcalmbhoadnljzi.supabase.co'; // <-- GANTI INI
-        const SUPABASE_ANON_KEY = 'sb_publishable_pKZED9bRr-uSeGtuX1NMyw_xVlCcXNj'; // <-- GANTI INI
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL'; // <-- GANTI INI
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // <-- GANTI INI
         
         let supabaseClient = null;
         let isSupabaseReady = false;
@@ -190,6 +215,10 @@
         let currentOrder = null;
         let allProducts = [];
         let isLoginMode = true;
+
+        // State untuk Modal Detail
+        let currentDetailProduct = null;
+        let detailQty = 1;
 
         // ==========================================
         // 2. INISIALISASI UTAMA
@@ -202,7 +231,7 @@
 
         function initSupabase() {
             if (SUPABASE_URL === 'YOUR_SUPABASE_URL' || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-                console.warn("⚠️ Supabase belum dikonfigurasi!");
+                console.warn("⚠️ Supabase belum dikonfigurasi! Menggunakan data simulasi.");
                 allProducts = getMockProducts();
                 renderProducts(allProducts);
                 return;
@@ -233,7 +262,6 @@
 
         function setupEventListeners() {
             document.getElementById('loginBtn').addEventListener('click', () => toggleLoginModal(true));
-            
             document.getElementById('logoutBtn').addEventListener('click', async () => {
                 if (isSupabaseReady) await supabaseClient.auth.signOut();
                 user = null;
@@ -241,10 +269,8 @@
                 renderCart();
                 updateAuthUI();
             });
-
             document.getElementById('cartBtn').addEventListener('click', () => toggleCart());
             document.getElementById('doAuthBtn').addEventListener('click', handleAuth);
-            
             document.getElementById('authToggleLink').addEventListener('click', (e) => {
                 e.preventDefault();
                 toggleAuthMode();
@@ -256,6 +282,7 @@
         // ==========================================
         async function fetchProductsFromSupabase() {
             try {
+                // Pastikan tabel 'products' Anda memiliki kolom: id, name, price, image_url, category, stock, description
                 const { data, error } = await supabaseClient.from('products').select('*');
                 if (error) throw error;
                 if (data && data.length > 0) {
@@ -273,13 +300,14 @@
         }
 
         function getMockProducts() {
+            // Menambahkan field 'stock' dan 'description' untuk simulasi
             return [
-                { id: 1, name: 'alight motion', price: 10000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183317_908_0tuedne1.jpg', category: 'Premium' },
-                { id: 2, name: 'capcut', price: 25000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184016_499_hav9l5ke.jpg', category: 'Premium' },
-                { id: 3, name: 'Spotify', price: 21000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184029_966_rdupq39f.jpg', category: 'Premium' },
-                { id: 4, name: 'Otp Order', price: 5000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183601_840_1hsqv0ry.jpg', category: 'Otp order' },
-                { id: 5, name: 'Bot VVIP', price: 50000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261009_121631_373_tqewxdsj.jpg', category: 'Bot vvip' },
-                { id: 6, name: 'Bot VIP', price: 30000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261009_121631_373_tqewxdsj.jpg', category: 'Bot vip' }
+                { id: 1, name: 'alight motion', price: 10000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183317_908_0tuedne1.jpg', category: 'Premium', stock: 55, description: 'Aplikasi edit video profesional untuk Android dan iOS. Fitur lengkap dan mudah digunakan.' },
+                { id: 2, name: 'capcut', price: 25000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184016_499_hav9l5ke.jpg', category: 'Premium', stock: 0, description: 'Editor video all-in-one dengan efek, filter, dan musik gratis.' },
+                { id: 3, name: 'Spotify', price: 21000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_184029_966_rdupq39f.jpg', category: 'Premium', stock: 12, description: 'Nikmati musik tanpa iklan dan bisa diunduh offline.' },
+                { id: 5, name: 'Otp Order', price: 5000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261001_183601_840_1hsqv0ry.jpg', category: 'Otp order', stock: 20, description: 'Layanan pesan OTP untuk berbagai kebutuhan verifikasi akun.' },
+                { id: 6, name: 'Bot VVIP', price: 50000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261009_121631_373_tqewxdsj.jpg', category: 'Bot vvip', stock: 10, description: 'Bot premium dengan fitur lengkap dan kecepatan tinggi.' },
+                { id: 7, name: 'Bot VIP', price: 30000, image_url: 'https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261009_121631_373_tqewxdsj.jpg', category: 'Bot vip', stock: 25, description: 'Bot VIP dengan fitur standar dan performa stabil.' }
             ];
         }
 
@@ -291,312 +319,4 @@
             if (products.length === 0) {
                 grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">Produk tidak ditemukan.</div>';
                 return;
-            }
-
-            products.forEach(prod => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow-sm border p-4 flex flex-col items-center text-center hover:shadow-md transition';
-                card.innerHTML = `
-                    <img src="${prod.image_url}" alt="${prod.name}" class="w-20 h-20 object-contain mb-3" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
-                    <h4 class="font-bold text-gray-800 text-sm mb-1 capitalize">${prod.name}</h4>
-                    <p class="text-blue-800 font-bold mb-3">Rp${prod.price.toLocaleString('id-ID')}</p>
-                    <button onclick="addToCart(${prod.id}, '${prod.name}', ${prod.price}, '${prod.image_url}')" class="w-full bg-blue-800 text-white py-1.5 rounded-lg text-sm font-medium hover:bg-blue-900 transition">+ Keranjang</button>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        window.filterProducts = function(category, btnElement) {
-            document.querySelectorAll('.category-btn').forEach(btn => {
-                btn.className = 'category-btn px-4 py-1.5 bg-white border text-gray-600 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-50';
-            });
-            if (btnElement) {
-                btnElement.className = 'category-btn active px-4 py-1.5 bg-blue-800 text-white rounded-full text-sm font-medium whitespace-nowrap';
-            }
-
-            if (category === 'Semua') {
-                renderProducts(allProducts);
-            } else {
-                const filtered = allProducts.filter(p => p.category === category);
-                renderProducts(filtered);
-            }
-        }
-
-        // ==========================================
-        // 4. FUNGSI AUTH (LOGIN & DAFTAR)
-        // ==========================================
-        window.toggleLoginModal = function(show) {
-            const modal = document.getElementById('loginModal');
-            if (show) {
-                isLoginMode = true;
-                updateAuthModalUI();
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-                document.getElementById('emailInput').value = '';
-                document.getElementById('passwordInput').value = '';
-            }
-        }
-
-        function toggleAuthMode() {
-            isLoginMode = !isLoginMode;
-            updateAuthModalUI();
-        }
-
-        function updateAuthModalUI() {
-            const title = document.getElementById('authModalTitle');
-            const btn = document.getElementById('doAuthBtn');
-            const toggleText = document.getElementById('authToggleText');
-            const toggleLink = document.getElementById('authToggleLink');
-
-            if (isLoginMode) {
-                title.innerText = 'Masuk ke Ayven';
-                btn.innerText = 'Masuk';
-                toggleText.innerText = 'Belum punya akun? ';
-                toggleLink.innerText = 'Daftar';
-            } else {
-                title.innerText = 'Daftar Akun';
-                btn.innerText = 'Daftar';
-                toggleText.innerText = 'Sudah punya akun? ';
-                toggleLink.innerText = 'Masuk';
-            }
-        }
-
-        async function handleAuth() {
-            const email = document.getElementById('emailInput').value;
-            const password = document.getElementById('passwordInput').value;
-            
-            if (!isSupabaseReady) {
-                alert('Supabase belum dikonfigurasi.');
-                return;
-            }
-
-            if (!email || !password) {
-                alert('Silakan masukkan email dan kata sandi.');
-                return;
-            }
-
-            try {
-                if (isLoginMode) {
-                    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-                    if (error) {
-                        alert('Login gagal: ' + error.message);
-                    } else {
-                        user = data.user;
-                        toggleLoginModal(false);
-                        updateAuthUI();
-                        alert('Login Berhasil!');
-                    }
-                } else {
-                    const { data, error } = await supabaseClient.auth.signUp({ email, password });
-                    if (error) {
-                        alert('Pendaftaran gagal: ' + error.message);
-                    } else {
-                        if (data.session) {
-                            user = data.user;
-                            toggleLoginModal(false);
-                            updateAuthUI();
-                            alert('Pendaftaran Berhasil! Anda telah login.');
-                        } else {
-                            alert('Pendaftaran Berhasil! Silakan cek email Anda untuk konfirmasi sebelum login.');
-                            toggleLoginModal(false);
-                        }
-                    }
-                }
-            } catch (error) {
-                alert('Terjadi kesalahan sistem: ' + error.message);
-            }
-        }
-
-        function updateAuthUI() {
-            const loginBtn = document.getElementById('loginBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (user) {
-                loginBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-            } else {
-                loginBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-            }
-        }
-
-        // ==========================================
-        // 5. FUNGSI KERANJANG
-        // ==========================================
-        window.addToCart = function(id, name, price, imageUrl) {
-            if (!user) {
-                alert('Silakan login terlebih dahulu untuk membeli produk.');
-                toggleLoginModal(true);
-                return;
-            }
-
-            const existingItem = cart.find(item => item.id === id);
-            if (existingItem) {
-                existingItem.quantity += 1;
-            } else {
-                cart.push({ id, name, price, image_url: imageUrl, quantity: 1 });
-            }
-            renderCart();
-            toggleCart(true);
-        }
-
-        window.updateQuantity = function(id, delta) {
-            const item = cart.find(item => item.id === id);
-            if (item) {
-                item.quantity += delta;
-                if (item.quantity <= 0) {
-                    cart = cart.filter(i => i.id !== id);
-                }
-            }
-            renderCart();
-        }
-
-        window.removeItem = function(id) {
-            cart = cart.filter(item => item.id !== id);
-            renderCart();
-        }
-
-        function renderCart() {
-            const container = document.getElementById('cartItemsContainer');
-            const badge = document.getElementById('cartBadge');
-            const totalItemsTitle = document.getElementById('cartCountTitle');
-            
-            let totalItems = 0;
-            let subtotal = 0;
-            container.innerHTML = '';
-
-            if (cart.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-400 py-10 text-sm">Keranjang Anda kosong.</div>';
-                badge.classList.add('hidden');
-                totalItemsTitle.innerText = '0';
-            } else {
-                badge.classList.remove('hidden');
-                cart.forEach(item => {
-                    totalItems += item.quantity;
-                    subtotal += item.price * item.quantity;
-
-                    const itemEl = document.createElement('div');
-                    itemEl.className = 'bg-white rounded-xl shadow-sm border p-4 flex gap-4 items-center';
-                    itemEl.innerHTML = `
-                        <img src="${item.image_url}" alt="${item.name}" class="w-16 h-16 object-contain rounded-lg">
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-800 text-sm capitalize">${item.name}</h4>
-                            <p class="text-blue-800 font-bold text-sm mb-1">Rp${item.price.toLocaleString('id-ID')}</p>
-                            <p class="text-gray-500 text-xs mb-2">Subtotal: Rp${(item.price * item.quantity).toLocaleString('id-ID')}</p>
-                            <div class="flex items-center gap-3">
-                                <div class="flex items-center border rounded-lg overflow-hidden">
-                                    <button onclick="updateQuantity(${item.id}, -1)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-sm font-bold">-</button>
-                                    <span class="px-3 py-1 text-sm font-semibold border-x">${item.quantity}</span>
-                                    <button onclick="updateQuantity(${item.id}, 1)" class="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-sm font-bold">+</button>
-                                </div>
-                                <button onclick="removeItem(${item.id})" class="text-red-500 text-xs font-semibold hover:underline ml-auto">Hapus</button>
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(itemEl);
-                });
-                badge.innerText = totalItems;
-                totalItemsTitle.innerText = totalItems;
-            }
-
-            document.getElementById('cartTotalItems').innerText = `${totalItems} produk`;
-            document.getElementById('cartSubtotal').innerText = `Rp${subtotal.toLocaleString('id-ID')}`;
-            document.getElementById('cartTotalPrice').innerText = `Rp${subtotal.toLocaleString('id-ID')}`;
-        }
-
-        window.toggleCart = function(forceOpen = false) {
-            const modal = document.getElementById('cartModal');
-            const content = document.getElementById('cartContent');
-            
-            if (modal.classList.contains('hidden') || forceOpen) {
-                modal.classList.remove('hidden');
-                setTimeout(() => content.classList.remove('translate-x-full'), 10);
-            } else {
-                content.classList.add('translate-x-full');
-                setTimeout(() => modal.classList.add('hidden'), 300);
-            }
-        }
-
-        // ==========================================
-        // 6. FUNGSI TRANSAKSI / CHECKOUT
-        // ==========================================
-        window.checkout = function() {
-            if (!user) {
-                alert('Silakan login terlebih dahulu.');
-                toggleLoginModal(true);
-                return;
-            }
-            if (cart.length === 0) {
-                alert('Keranjang Anda masih kosong.');
-                return;
-            }
-
-            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-            const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const productNames = cart.map(item => item.name).join(', ');
-
-            const orderId = 'ORD-' + Date.now().toString().slice(-6);
-
-            currentOrder = {
-                id: orderId,
-                product_name: productNames,
-                quantity: totalItems,
-                total_price: totalPrice,
-                status: 'pending'
-            };
-
-            document.getElementById('trxOrderId').innerText = currentOrder.id;
-            document.getElementById('trxProductName').innerText = currentOrder.product_name;
-            document.getElementById('trxQuantity').innerText = currentOrder.quantity;
-            document.getElementById('trxTotalPrice').innerText = `Rp${currentOrder.total_price.toLocaleString('id-ID')}`;
-            
-            // Reset ke gambar QRIS Default
-            document.getElementById('qrisImage').src = "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261003_182340_580_8hr1cltc.jpg";
-            
-            document.getElementById('cancelOrderBtn').classList.remove('hidden');
-            document.getElementById('simulatePayBtn').classList.remove('hidden');
-            document.getElementById('paidBtn').classList.add('hidden');
-
-            document.getElementById('transactionModal').classList.remove('hidden');
-            toggleCart(false);
-        }
-
-        window.cancelOrder = function() {
-            if (!currentOrder) return;
-            currentOrder.status = 'canceled';
-            // Gambar QRIS Pembatalan (Sudah otomatis 1:1 karena class aspect-square di HTML)
-            document.getElementById('qrisImage').src = "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261003_191207_668_tahtrwex.jpg";
-            document.getElementById('cancelOrderBtn').classList.add('hidden');
-            document.getElementById('simulatePayBtn').classList.add('hidden');
-            alert('Pesanan telah dibatalkan.');
-        }
-
-        window.simulatePayment = function() {
-            if (!currentOrder) return;
-            currentOrder.status = 'paid';
-            // Gambar QRIS Berhasil (Sudah otomatis 1:1 karena class aspect-square di HTML)
-            document.getElementById('qrisImage').src = "https://raw.githubusercontent.com/ZrooPro/SaveDat1/main/uploads/20261003_200401_117_6h3lfq1n.jpg";
-            document.getElementById('cancelOrderBtn').classList.add('hidden');
-            document.getElementById('simulatePayBtn').classList.add('hidden');
-            document.getElementById('paidBtn').classList.remove('hidden');
-        }
-
-        window.sendWhatsApp = function() {
-            if (!currentOrder) return;
-            const waktu = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-            const namaUser = user ? (user.email || 'Pelanggan') : 'Pelanggan';
-            const pesan = `nama: ${namaUser}\nproduk: ${currentOrder.product_name}\njumlah: ${currentOrder.quantity}\nwaktu: ${waktu}\n\nnote: silakan kirim bukti transaksi untuk lebih lanjut`;
-            const waUrl = `https://wa.me/6285779126072?text=${encodeURIComponent(pesan)}`;
-            cart = [];
-            renderCart();
-            window.open(waUrl, '_blank');
-            closeTransaction();
-        }
-
-        window.closeTransaction = function() {
-            document.getElementById('transactionModal').classList.add('hidden');
-            currentOrder = null;
-        }
-    </script>
-</body>
-</html>
+         
